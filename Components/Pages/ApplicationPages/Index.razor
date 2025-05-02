@@ -1,0 +1,86 @@
+﻿@page "/applications"
+@inject ApplicationService ApplicationService
+@attribute [StreamRendering]
+
+<PageTitle>Applications</PageTitle>
+
+<div class="d-flex justify-content-between mb-4">
+	<h1 class="fw-bold fs-2 mb-0">Applications</h1>
+	<a href="/applications/create" class="btn btn-primary">
+		<i class="bi bi-plus-circle"></i> New application
+	</a>
+</div>
+
+@if (applications is null || applications.Items is null)
+{
+	<Spinner />
+}
+else
+{
+	<div class="row">
+		@foreach (var application in applications.Items)
+		{			
+			<div class="col-lg-4 col-md-6 mb-4 h-100">
+				<div class="card shadow-sm">
+					<div class="card-body p-4">
+						<div class="d-flex justify-content-between align-items-center">
+							<a class="card-title fw-medium mb-0" href="#">@application.JobTitle</a>
+							<span class="badge bg-primary fw-medium rounded-pill">@application.Status</span>
+						</div>
+						<p class="card-text text-small mb-3">@application.CompanyName</p>
+						<div class="text-small text-muted" style="font-size: 13px;">
+							<p class="card-text mb-2">
+								<i class="bi bi-calendar4"></i> Applied on @application.ApplicationDate.ToString("dd MMM yyyy")
+							</p>
+							<p class="card-text mb-0">
+								<i class="bi bi-calendar4"></i> @application.NextAction on @application.ApplicationDate.ToString("dd MMM yyyy")
+							</p>
+						</div>
+						<p class="mt-2">
+							@(application.JobDescription ?? "No description submitted")
+						</p>
+						<div class="d-flex justify-content-end align-items-center mt-3 gap-3">
+							<a href="#" class="btn btn-outline-primary btn-sm">
+								<i class="bi bi-eye"></i>
+							</a>
+							<a href="#" class="btn btn-outline-secondary btn-sm">
+								<i class="bi bi-pencil-square"></i>
+							</a>
+							<a href="#" class="btn btn-outline-danger btn-sm">
+								<i class="bi bi-trash"></i>
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		}
+	</div>
+}
+
+<style>
+	.card-title {
+		font-size: 18px;
+		color: #000;
+		text-decoration: none;
+	}
+
+		.card-title:hover {
+			text-decoration: underline;
+			color: var(--bs-primary);
+		}
+
+		.text-muted {
+		color: #64748b !important;
+		}
+</style>
+
+
+@code {
+	PaginatedModel<ApplicationModel>? applications;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await Task.Delay(1000);
+		applications = await ApplicationService.GetApplicationsAsync();
+	}
+}
