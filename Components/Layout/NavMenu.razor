@@ -1,28 +1,26 @@
 ﻿@inject NavigationManager NavigationManager  
 
-<nav class="navbar navbar-expand-md border-botton shadow-sm" style="min-height: 4rem;">  
-<div class="container">  
-  <a class="navbar-brand text-primary fw-medium me-5 my-1" href="/">JobTrack</a>  
-  <button class="navbar-toggler p-1" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">  
-      <i class="bi bi-list"></i>  
-  </button>  
-  <div class="collapse navbar-collapse py-2" id="navbarNav">  
-      <ul class="navbar-nav">  
-          <li class="nav-item">  
-              <NavLink class="nav-link fw-medium rounded-link m-1" href="/" Match="NavLinkMatch.All"
-                             style="@(NavigationManager.Uri.TrimEnd('/') == NavigationManager.BaseUri.TrimEnd('/') ? "background-color: #2563EB1A; color: var(--bs-primary);" : "")">
+<nav class="navbar navbar-expand-md border-botton shadow-sm" style="min-height: 4rem;">
+    <div class="container-fluid container-lg px-md-4">
+        <a class="navbar-brand text-primary fw-medium me-5 my-1" href="/">JobTrack</a>
+        <button class="navbar-toggler p-1" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-list"></i>
+        </button>
+        <div class="collapse navbar-collapse py-2" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <NavLink class="nav-link fw-medium rounded-link m-1" href="/" Match="NavLinkMatch.All">
                         <i class="bi bi-columns-gap"></i> Dashboard
-              </NavLink>
-          </li>  
-          <li class="nav-item">  
-              <NavLink class="nav-link fw-medium rounded-link m-1" href="/applications" Match="NavLinkMatch.All"
-                             style="@(NavigationManager.Uri.Contains("/applications") ? "background-color: #2563EB1A; color: var(--bs-primary);" : "")">
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link fw-medium rounded-link m-1" href="/applications" Match="NavLinkMatch.All">
                         <i class="bi bi-list-columns-reverse"></i> Applications
-              </NavLink>  
-          </li>  
-      </ul>  
-  </div>  
-</div>  
+                    </NavLink>
+                </li>
+            </ul>
+        </div>
+    </div>
 </nav>
 
 <style>
@@ -31,8 +29,28 @@
         color: var(--bs-primary);
     }
 
+    .nav-link.active {
+        background-color: #2563EB1A;
+        color: var(--bs-primary) !important;
+    }
+
 	.rounded-link {
 		border-radius: 0.5rem;
 		padding: 0.5rem 1rem;
 	}
+
+    @@media (max-width: 767px) {
+        .navbar-collapse {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 1050;
+            background-color: white; /* Assure la lisibilité */
+        }
+
+        .navbar {
+            position: relative; /* Contexte pour le positionnement absolu */
+        }
+    }
 </style>

@@ -1,4 +1,4 @@
-body {
+﻿body {
     font-size: 14px !important;
 }
 
@@ -30,4 +30,18 @@ h1:focus {
 
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
+}
+
+.form-label {
+    font-weight: 500;
+}
+
+.btn {
+    font-size: 14px !important;
+    font-weight: 500 !important;
+}
+
+.required::after {
+    content: " *";
+    color: #e50000;
 }

@@ -1,7 +1,105 @@
 ﻿@page "/applications/{id:int}"
+@inject ApplicationService ApplicationService
+@inject NavigationManager NavigationManager
+@attribute [StreamRendering]
 
-<h3>Details</h3>
+@if (Id is null || application is null)
+{
+	<Spinner />
+}
+else
+{
+	<div class="d-flex justify-content-between mb-4">
+		<h1 class="fw-bold fs-2 mb-0">@application.JobTitle</h1>
+		<a href="/applications" class="btn btn-primary">
+			<i class="bi bi-arrow-left"></i> Back to applications
+		</a>
+	</div>
+	<div class="row">
+		<div class="col-md-8">
+			<div class="card shadow-sm mb-4">
+				<div class="card-body p-4">
+					<p class="card-text text-small mb-3">@application.CompanyName</p>
+					<p class="card-text text-small mb-3">@application.JobDescription</p>
+					<p class="card-text text-small mb-3">Status: @application.Status</p>
+					<p class="card-text text-small mb-3">Applied on: @application.ApplicationDate.ToString("dd MMM yyyy")</p>
+					@if (application.NextActionDate.HasValue && application.NextAction != null)
+					{
+						<p class="card-text text-small mb-0">Next action: @application.NextAction on @application.NextActionDate?.ToString("dd MMM yyyy")</p>
+					}
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4">
+			@if (!string.IsNullOrWhiteSpace(application.ContactName))
+			{
+				<div class="card shadow-sm">
+					<div class="card-body px-4">
+						<div class="card-title fw-medium fs-5 mb-3">
+							Contact
+						</div>
+						<div class="card-text fs-6">
+							<p class="mb-2">
+								<i class="bi bi-person"></i>
+								@application.ContactName
+							</p>
+							@if (!string.IsNullOrWhiteSpace(application.ContactEmail))
+							{
+								<p class="mb-2">
+									<i class="bi bi-envelope-at"></i>
+									<a href="mailto:@application.ContactEmail" class="text-decoration-none">
+										@application.ContactEmail
+									</a>
+								</p>
+							}						
+						</div>
+					</div>
+				</div>
+			}
+			<div class="card shadow-sm">
+				<div class="card-body px-4">
+					<div class="card-title fw-medium fs-5 mb-3">
+						Files
+					</div>
+					<div class="card-text fs-6">
+						<p class="mb-2">
+							<i class="bi bi-file-earmark-person"></i>
+							<a href="@application.ResumeFilePath" class="text-decoration-none fw-medium">
+								Resume
+							</a>
+							<span class="text-muted">(PDF)</span>
+						</p>
+						@if (!string.IsNullOrWhiteSpace(application.CoverLetterFilePath))
+						{
+							<p class="mb-2">
+								<i class="bi bi-file-earmark-text-fill"></i>
+								<a href="@application.CoverLetterFilePath" class="text-decoration-none fw-medium">
+									Cover Letter
+								</a>
+							</p>
+						}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>	
+}
 
 @code {
+	[Parameter]
+	public int? Id { get; set; }
 
+	private ApplicationModel? application;
+
+	protected override async Task OnParametersSetAsync()
+	{
+		if (Id.HasValue)
+		{
+			application = await ApplicationService.GetApplicationByIdAsync(Id.Value);
+		}
+		else
+		{
+			NavigationManager.NavigateTo("/applications");
+		}
+	}
 }

@@ -1,7 +1,295 @@
 ﻿@page "/applications/create"
+@inject EnumService EnumService
+@rendermode InteractiveServer
+@attribute [StreamRendering]
+@inject ApplicationService ApplicationService
+@inject NavigationManager NavigationManager
 
-<h3>Create</h3>
+<div class="mx-lg-auto col-lg-8">
+	<PageTitle>New application</PageTitle>
+
+	<div class="mb-4">
+		<h1 class="fw-bold fs-2 mb-0">New application</h1>
+	</div>
+
+	@if (Application is null || Enums is null)
+	{
+		<Spinner />
+	}
+	else
+	{
+		<div class="card shadow-sm">
+			<div class="card-body p-4">
+				<EditForm Model="Application" FormName="create" OnValidSubmit="HandleSubmitAsync" Enhance>
+					<DataAnnotationsValidator />
+					<ValidationSummary />
+
+					<div class="row">
+						<div class="col-md-6 mb-3">
+							<label for="jobTitle" class="form-label required">Job title</label>
+							<InputText id="jobTitle" class="form-control" @bind-Value="Application.JobTitle" />
+							<ValidationMessage For="@(() => Application.JobTitle)" />
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="companyName" class="form-label required">Company name</label>
+							<InputText id="companyName" class="form-control" @bind-Value="Application.CompanyName" />
+							<ValidationMessage For="@(() => Application.CompanyName)" />
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="location" class="form-label required">Location</label>
+							<InputText id="location" class="form-control" @bind-Value="Application.Location" />
+							<ValidationMessage For="@(() => Application.Location)" />
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="offerUrl" class="form-label required">Offer URL</label>
+							<InputText id="offerUrl" class="form-control" @bind-Value="Application.OfferUrl" />
+							<ValidationMessage For="@(() => Application.OfferUrl)" />
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="source" class="form-label required">Source</label>
+							<InputSelect id="source" class="form-select" @bind-Value="Application.Source">
+								<optgroup label="Select job source">
+									@foreach (var source in Enums.JobSources)
+									{
+										<option value="@source.Id">@source.Name</option>
+									}
+								</optgroup>
+							</InputSelect>
+							<ValidationMessage For="@(() => Application.Source)" />
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="contractType" class="form-label required">Contract type</label>
+							<InputSelect id="contractType" class="form-select" @bind-Value="Application.ContractType">
+								<optgroup label="Select contract type">
+									@foreach (var contractType in Enums.ContractTypes)
+									{
+										<option value="@contractType.Id">@contractType.Name</option>
+									}
+								</optgroup>
+							</InputSelect>
+							<ValidationMessage For="@(() => Application.ContractType)" />
+						</div>
+						<div class="col-md-4 mb-3">
+							<label for="applicationDate" class="form-label required">Application date</label>
+							<InputDate id="applicationDate" class="form-control" @bind-Value="Application.ApplicationDate" />
+							<ValidationMessage For="@(() => Application.ApplicationDate)" />
+						</div>
+						<div class="col-md-4 mb-3">
+							<label for="postingDate" class="form-label">Posting date</label>
+							<InputDate id="postingDate" class="form-control" @bind-Value="Application.PostingDate" />
+						</div>
+						<div class="col-md-4 mb-3">
+							<label for="closingDate" class="form-label">Closing date</label>
+							<InputDate id="closingDate" class="form-control" @bind-Value="Application.ClosingDate" />
+						</div>
+						<div class="col-md-12 mb-3">
+							<label for="jobDescription" class="form-label">Job description</label>
+							<InputTextArea id="jobDescription" rows="4" class="form-control" @bind-Value="Application.JobDescription" />
+						</div>
+						<div class="col-md-12 mb-3">
+							<label for="keyWords" class="form-label">Key words</label>
+							<InputText id="keyWords" class="form-control" @bind-Value="Application.KeyWords" placeholder="eg: C#, Blazor, React" />
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="resume" class="form-label required">Resume<span class="text-small text-muted ms-1">(PDF and Word files only)</span></label>
+							<InputFile id="resume" class="form-control" OnChange="HandleResumeUpload" accept="application/pdf,.docx,.doc" />
+							<ValidationMessage For="@(() => Application.Resume)" />
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="coverLetter" class="form-label">Cover letter</label>
+							<InputFile id="coverLetter" class="form-control" OnChange="HandleCoverLetterUpload" accept="application/pdf,.docx,.doc" />
+						</div>
+						<div class="col-md-12 mb-3">
+							<label for="interestLevel" class="form-label required mb-0">Interest level</label>
+							<Rating CurrentRating="@Application.InterestLevel"
+									CurrentRatingChanged="@((value) => Application.InterestLevel = value)" />
+							<ValidationMessage For="@(() => Application.InterestLevel)" />
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="status" class="form-label required">Status</label>
+							<InputSelect id="status" class="form-select" @bind-Value="Application.Status">
+								<optgroup label="Select status">
+									@foreach (var status in Enums.ApplicationStatuses)
+									{
+										<option value="@status.Id">@status.Name</option>
+									}
+								</optgroup>
+							</InputSelect>
+							<ValidationMessage For="@(() => Application.Status)" />
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="priority" class="form-label required">Priority</label>
+							<InputSelect id="priority" class="form-select" @bind-Value="Application.Priority">
+								<optgroup label="Select priority">
+									@foreach (var priority in Enums.Priorities)
+									{
+										<option value="@priority.Id">@priority.Name</option>
+									}
+								</optgroup>
+							</InputSelect>
+							<ValidationMessage For="@(() => Application.Priority)" />
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="lastAction" class="form-label required">Last action</label>
+							<InputSelect id="lastAction" class="form-select" @bind-Value="Application.LastAction">
+								<optgroup label="Select last action">
+									@foreach (var action in Enums.ActionTypes)
+									{
+										<option value="@action.Id">@action.Name</option>
+									}
+								</optgroup>
+							</InputSelect>
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="lastActionDate" class="form-label required">Last action date</label>
+							<InputDate id="lastActionDate" class="form-control" @bind-Value="Application.LastActionDate" />
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="nextAction" class="form-label required">Next action</label>
+							<InputSelect id="nextAction" class="form-select" @bind-Value="Application.NextAction">
+								<optgroup label="Select next action">
+									@foreach (var action in Enums.ActionTypes)
+									{
+										<option value="@action.Id">@action.Name</option>
+									}
+								</optgroup>
+							</InputSelect>
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="nextActionDate" class="form-label">Next action date</label>
+							<InputDate id="nextActionDate" class="form-control" @bind-Value="Application.NextActionDate" />
+						</div>
+						<div class="col-md-12 mb-3">
+							<div class="col-md-3">
+								<label for="currency" class="form-label">Currency</label>
+								<InputSelect id="currency" class="form-select" @bind-Value="Application.Currency">
+									<optgroup label="Select currency">
+										<option value="">Undefined</option>
+										@foreach (var currency in Enums.Currencies)
+										{
+											<option value="@currency.Id">@currency.Name</option>
+										}
+									</optgroup>
+								</InputSelect>
+							</div>
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="minSalaryProposed" class="form-label">Min salary proposed</label>
+							<div class="input-group">
+								<span class="input-group-text">@GetCurrencySymbol()</span>
+								<InputNumber id="minSalaryProposed" class="form-control" @bind-Value="Application.MinSalaryProposed" />
+							</div>
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="maxSalaryProposed" class="form-label">Max salary proposed</label>
+							<div class="input-group">
+								<span class="input-group-text">@GetCurrencySymbol()</span>
+								<InputNumber id="maxSalaryProposed" class="form-control" @bind-Value="Application.MaxSalaryProposed" />
+							</div>
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="minSalaryOffered" class="form-label">Min salary offered</label>
+							<div class="input-group">
+								<span class="input-group-text">@GetCurrencySymbol()</span>
+								<InputNumber id="minSalaryOffered" class="form-control" @bind-Value="Application.MinSalaryOffered" />
+							</div>
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="maxSalaryOffered" class="form-label">Max salary offered</label>
+							<div class="input-group">
+								<span class="input-group-text">@GetCurrencySymbol()</span>
+								<InputNumber id="maxSalaryOffered" class="form-control" @bind-Value="Application.MaxSalaryOffered" />
+							</div>
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="contactName" class="form-label">Contact name</label>
+							<InputText id="contactName" class="form-control" @bind-Value="Application.ContactName" />
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="contactEmail" class="form-label">Contact email</label>
+							<InputText type="email" id="contactEmail" class="form-control" @bind-Value="Application.ContactEmail" />
+						</div>
+						<div class="col-md-12 mb-3">
+							<label for="notes" class="form-label">Notes</label>
+							<InputTextArea id="notes" rows="4" class="form-control" @bind-Value="Application.Notes" />
+						</div>
+					</div>
+					<div class="d-flex justify-content-between">
+						<a href="/applications" class="btn btn-light border">
+							<i class="bi bi-x-circle me-2"></i> Cancel
+						</a>
+						<button type="submit" class="btn btn-primary">
+							<i class="bi bi-floppy me-2"></i> Submit
+						</button>
+					</div>
+				</EditForm>
+			</div>
+		</div>
+	}
+</div>
+
 
 @code {
+	[SupplyParameterFromForm]
+	private CreateApplicationModel? Application { get; set; }
 
+	private AllEnums? Enums { get; set; }
+
+	protected override void OnInitialized() => Application ??= new CreateApplicationModel();
+
+	protected override async Task OnInitializedAsync()
+	{
+		Application ??= new CreateApplicationModel();
+		Enums = await EnumService.GetAllEnumsAsync();
+	}
+
+	private async Task HandleResumeUpload(InputFileChangeEventArgs e)
+	{
+		var file = e.File;
+		if (file is null || Application is null)
+		{
+			return;
+		}
+		Application.Resume = await ConvertToIFormFileAsync(file);
+	}
+
+	private async Task HandleCoverLetterUpload(InputFileChangeEventArgs e)
+	{
+		var file = e.File;
+		if (file is null || Application is null)
+		{
+			return;
+		}
+		Application.CoverLetter = await ConvertToIFormFileAsync(file);
+	}
+
+	private async Task<IFormFile> ConvertToIFormFileAsync(IBrowserFile file)
+	{
+		var memoryStream = new MemoryStream();
+		await file.OpenReadStream().CopyToAsync(memoryStream);
+		return new FormFile(memoryStream, 0, file.Size, file.Name, file.Name)
+		{
+			Headers = new HeaderDictionary(),
+			ContentType = file.ContentType
+		};
+	}
+
+	private string GetCurrencySymbol()
+	{
+		if (Application is null || Enums is null)
+		{
+			return "-";
+		}
+		var currency = Enums.Currencies.SingleOrDefault(c => c.Id == Application.Currency);
+		return currency?.Name ?? "-";
+	}
+
+	private async Task HandleSubmitAsync()
+	{
+		ArgumentNullException.ThrowIfNull(Application);
+
+		await ApplicationService.CreateApplicationAsync(Application);
+
+		NavigationManager.NavigateTo("/applications");
+	}
 }

@@ -1,0 +1,83 @@
+﻿
+<div class="rating">
+    <span class="star"
+          @onclick="() => SetRating(1)"
+          @onmouseover="() => SetHoverRating(1)"
+          @onmouseleave="() => ResetHoverRating()">
+        <i class="bi @GetStarClass(1)"></i>
+    </span>
+    <span class="star"
+          @onclick="() => SetRating(2)"
+          @onmouseover="() => SetHoverRating(2)"
+          @onmouseleave="() => ResetHoverRating()">
+        <i class="bi @GetStarClass(2)"></i>
+    </span>
+    <span class="star"
+          @onclick="() => SetRating(3)"
+          @onmouseover="() => SetHoverRating(3)"
+          @onmouseleave="() => ResetHoverRating()">
+        <i class="bi @GetStarClass(3)"></i>
+    </span>
+    <span class="star"
+          @onclick="() => SetRating(4)"
+          @onmouseover="() => SetHoverRating(4)"
+          @onmouseleave="() => ResetHoverRating()">
+        <i class="bi @GetStarClass(4)"></i>
+    </span>
+    <span class="star"
+          @onclick="() => SetRating(5)"
+          @onmouseover="() => SetHoverRating(5)"
+          @onmouseleave="() => ResetHoverRating()">
+        <i class="bi @GetStarClass(5)"></i>
+    </span>
+</div>
+
+<style>
+    .rating {
+        font-size: 2rem;
+    }
+
+    .star {
+        cursor: pointer;
+        margin-right: 5px;
+    }
+
+</style>
+
+@code {
+    [Parameter] public int MaxRating { get; set; } = 5;
+    [Parameter] public int CurrentRating { get; set; }
+    [Parameter] public EventCallback<int> CurrentRatingChanged { get; set; }
+
+    private int HoverRating { get; set; } = 0;
+
+    private void SetRating(int rating)
+    {
+        CurrentRating = rating;
+        CurrentRatingChanged.InvokeAsync(CurrentRating); // Informer le parent de la sélection
+    }
+
+    private void SetHoverRating(int rating)
+    {
+        HoverRating = rating;
+    }
+
+    private void ResetHoverRating()
+    {
+        HoverRating = 0;
+    }
+
+    private string GetStarClass(int i)
+    {
+        // Si on survole l'étoile, les étoiles avant celle survolée deviennent dorées
+        if (HoverRating >= i)
+            return "bi-star-fill text-warning"; // Dorée en survol
+
+        // Si la note sélectionnée est égale ou supérieure à l'indice, l'étoile est dorée
+        else if (CurrentRating >= i)
+            return "bi-star-fill text-warning"; // Dorée (sélectionnée)
+
+        else
+            return "bi-star text-muted"; // Non sélectionnée (grise)
+    }
+}

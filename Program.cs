@@ -13,6 +13,9 @@ string webApiBaseUrl = builder.Configuration["WebApiBaseUrl"]
 builder.Services.AddHttpClient<ApplicationService>(
     client => client.BaseAddress = new Uri(webApiBaseUrl));
 
+builder.Services.AddHttpClient<EnumService>(
+    client => client.BaseAddress = new Uri(webApiBaseUrl));
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
