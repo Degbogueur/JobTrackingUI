@@ -73,6 +73,7 @@ public class CreateApplicationModel
     public string? KeyWords { get; set; }
 
     [Required]
+    [Range(1, 5, ErrorMessage = "Interest level must be between 1 and 5.")]
     public int InterestLevel { get; set; }
 
     public string? ContactName { get; set; }

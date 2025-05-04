@@ -1,5 +1,5 @@
 ﻿
-<div class="rating">
+<div class="@SizeClass">
     <span class="star"
           @onclick="() => SetRating(1)"
           @onmouseover="() => SetHoverRating(1)"
@@ -37,47 +37,58 @@
         font-size: 2rem;
     }
 
+    .rating-sm {
+        font-size: 1rem;
+    }
+
     .star {
         cursor: pointer;
         margin-right: 5px;
     }
 
+    .rating-sm .star {
+        cursor: auto;
+        margin-right: 0px !important;
+    }
 </style>
 
 @code {
     [Parameter] public int MaxRating { get; set; } = 5;
     [Parameter] public int CurrentRating { get; set; }
     [Parameter] public EventCallback<int> CurrentRatingChanged { get; set; }
+    [Parameter] public bool IsReadOnly { get; set; } = false;
+    [Parameter] public string SizeClass { get; set; } = "rating";
 
     private int HoverRating { get; set; } = 0;
 
     private void SetRating(int rating)
     {
-        CurrentRating = rating;
-        CurrentRatingChanged.InvokeAsync(CurrentRating); // Informer le parent de la sélection
+        if (!IsReadOnly)
+        {
+            CurrentRating = rating;
+            CurrentRatingChanged.InvokeAsync(CurrentRating);
+        }
     }
 
     private void SetHoverRating(int rating)
     {
-        HoverRating = rating;
+        if (!IsReadOnly)
+            HoverRating = rating;
     }
 
     private void ResetHoverRating()
     {
-        HoverRating = 0;
+        if (!IsReadOnly)
+            HoverRating = 0;
     }
 
     private string GetStarClass(int i)
     {
-        // Si on survole l'étoile, les étoiles avant celle survolée deviennent dorées
         if (HoverRating >= i)
-            return "bi-star-fill text-warning"; // Dorée en survol
-
-        // Si la note sélectionnée est égale ou supérieure à l'indice, l'étoile est dorée
+            return "bi-star-fill text-warning";
         else if (CurrentRating >= i)
-            return "bi-star-fill text-warning"; // Dorée (sélectionnée)
-
+            return "bi-star-fill text-warning";
         else
-            return "bi-star text-muted"; // Non sélectionnée (grise)
+            return "bi-star text-muted";
     }
 }

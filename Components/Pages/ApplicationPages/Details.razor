@@ -3,6 +3,8 @@
 @inject NavigationManager NavigationManager
 @attribute [StreamRendering]
 
+<PageTitle>@Title</PageTitle>
+
 @if (Id is null || application is null)
 {
 	<Spinner />
@@ -15,48 +17,191 @@ else
 			<i class="bi bi-arrow-left"></i> Back to applications
 		</a>
 	</div>
-	<div class="row">
+	<div class="row gy-4">
 		<div class="col-md-8">
-			<div class="card shadow-sm mb-4">
+			<div class="card shadow-sm">
 				<div class="card-body p-4">
-					<p class="card-text text-small mb-3">@application.CompanyName</p>
-					<p class="card-text text-small mb-3">@application.JobDescription</p>
-					<p class="card-text text-small mb-3">Status: @application.Status</p>
-					<p class="card-text text-small mb-3">Applied on: @application.ApplicationDate.ToString("dd MMM yyyy")</p>
-					@if (application.NextActionDate.HasValue && application.NextAction != null)
-					{
-						<p class="card-text text-small mb-0">Next action: @application.NextAction on @application.NextActionDate?.ToString("dd MMM yyyy")</p>
-					}
+					<div class="d-flex justify-content-between align-items-center mb-4">
+						<div class="">
+							<h4 class="card-title fw-medium">
+								@application.CompanyName
+							</h4>
+							<p class="text-muted fs-6 mb-0">
+								<i class="bi bi-geo-alt"></i>
+								@application.Location
+							</p>
+						</div>
+						<div class="text-end">
+							<div>
+								<a class="btn btn-outline-secondary btn-sm" href="@($"/applications/edit/{application.Id}")">
+									<i class="bi bi-pencil-square"></i>
+								</a>
+								<a class="btn btn-outline-danger btn-sm" href="@($"/applications/delete/{application.Id}")">
+									<i class="bi bi-trash"></i>
+								</a>
+							</div>
+							<span class="badge bg-primary fw-medium rounded-pill">
+								@application.Status
+							</span>
+
+						</div>
+					</div>
+					<h5 class="fw-medium">Job description</h5>
+					<p class="card-text text-small mb-4">@application.JobDescription</p>
+					
+					<div class="row row-cols-1 row-cols-sm-2 g-3">
+						<div class="col">
+							<p class="tiny-label fw-medium">Contract type</p>
+							<p class="mb-0 fs-6 fw-medium">
+								<i class="bi bi-file-earmark-text"></i>
+								@application.ContractType
+							</p>
+						</div>
+						<div class="col">
+							<p class="tiny-label fw-medium">Source</p>
+							<p class="mb-0 fs-6 fw-medium">
+								<i class="bi bi-globe2"></i>
+								@application.Source
+							</p>
+						</div>
+						<div class="col">
+							<p class="tiny-label fw-medium">Key words</p>
+							<p class="mb-0 fs-6 fw-medium">
+								<i class="bi bi-tags"></i>
+								@(application.KeyWords ?? "No key words submitted")
+							</p>
+						</div>
+						<div class="col">
+							<p class="tiny-label fw-medium">Priority</p>
+							<p class="mb-0 fs-6 fw-medium">
+								<i class="bi bi-exclamation-circle"></i>
+								@application.Priority
+							</p>
+						</div>
+						<div class="col">
+							<p class="tiny-label fw-medium">Interest level</p>
+							<p class="mb-0 fs-6 fw-medium">
+								<Rating CurrentRating="@application.InterestLevel"
+										IsReadOnly="true"
+										SizeClass="rating-sm" />
+							</p>
+						</div>
+						<div class="col">
+							<p class="tiny-label fw-medium">Offer URL</p>
+							<p class="mb-0 fs-6 fw-medium">
+								<a href="@application.OfferUrl" target="_blank" class="text-decoration-none">
+									Show offer
+									<i class="bi bi-box-arrow-up-right"></i>
+								</a>
+							</p>
+						</div>
+						@if (application.MinSalaryProposed.HasValue && application.MaxSalaryProposed.HasValue)
+						{
+							<div class="col mt-md-0">
+								<p class="tiny-label fw-medium">Proposed salary</p>
+								<p class="mb-0 fs-6 fw-medium">
+									@($"{application.MinSalaryProposed:#,0.00} - {application.MaxSalaryProposed:#,0.00} {application.Currency}")
+								</p>
+							</div>
+						}
+						@if (application.MinSalaryOffered.HasValue && application.MaxSalaryOffered.HasValue)
+						{
+							<div class="col mt-md-0">
+								<p class="tiny-label fw-medium">Offered salary</p>
+								<p class="mb-0 fs-6 fw-medium">
+									@($"{application.MinSalaryOffered:#,0.00} - {application.MaxSalaryOffered:#,0.00} {application.Currency}")
+								</p>
+							</div>
+						}
+					</div>
+					<div class="col mt-3">
+						<p class="tiny-label fw-medium">Notes</p>
+						<p class="mb-0 fs-6 fw-medium">
+							@(application.Notes ?? "No notes submitted")
+						</p>
+					</div>
 				</div>
 			</div>
 		</div>
 		<div class="col-md-4">
-			@if (!string.IsNullOrWhiteSpace(application.ContactName))
-			{
-				<div class="card shadow-sm">
-					<div class="card-body px-4">
-						<div class="card-title fw-medium fs-5 mb-3">
-							Contact
-						</div>
-						<div class="card-text fs-6">
-							<p class="mb-2">
-								<i class="bi bi-person"></i>
-								@application.ContactName
+			<!-- Important dates card -->
+			<div class="card shadow-sm mb-4">
+				<div class="card-body px-4">
+					<div class="card-title fw-medium fs-5 mb-3">
+						Important dates
+					</div>
+					<div class="card-text fs-6">
+						<div class="mb-2">
+							<p class="tiny-label">Application date</p>
+							<p class="mb-0">
+								<i class="bi bi-calendar4 me-1"></i>
+								@application.ApplicationDate.ToString("dd MMM yyyy")
 							</p>
-							@if (!string.IsNullOrWhiteSpace(application.ContactEmail))
-							{
-								<p class="mb-2">
-									<i class="bi bi-envelope-at"></i>
-									<a href="mailto:@application.ContactEmail" class="text-decoration-none">
-										@application.ContactEmail
-									</a>
+						</div>
+						@if (application.PostingDate.HasValue)
+						{
+							<div class="mb-2">
+								<p class="tiny-label">Posting date</p>
+								<p class="mb-0">
+									<i class="bi bi-calendar4 me-1"></i>
+									@application.PostingDate?.ToString("dd MMM yyyy")
 								</p>
-							}						
+							</div>
+						}
+						@if (application.ClosingDate.HasValue)
+						{
+							<div class="mb-2">
+								<p class="tiny-label">Closing date</p>
+								<p class="mb-0">
+									<i class="bi bi-calendar4 me-1"></i>
+									@application.ClosingDate?.ToString("dd MMM yyyy")
+								</p>
+							</div>
+						}
+					</div>
+				</div>
+			</div>
+			<!-- Important dates card -->
+
+			<!-- Steps card -->
+			<div class="card shadow-sm mb-4">
+				<div class="card-body px-4">
+					<div class="card-title fw-medium fs-5 mb-3">
+						Steps
+					</div>
+					<div class="card-text fs-6">
+						<div class="mb-2">
+							<p class="tiny-label">Last action</p>
+							<p class="mb-0">
+								<span class="fw-medium">
+									@application.LastAction
+								</span>
+								<span class="tiny-label fw-medium">
+									(@application.LastActionDate.ToString("dd MMM yyyy"))
+								</span>
+							</p>
+						</div>
+						<div class="mb-2">
+							<p class="tiny-label">Next action</p>
+							<p class="mb-0">
+								<span class="fw-medium">
+									@application.NextAction
+								</span>
+								@if (application.NextActionDate.HasValue)
+								{
+									<span class="tiny-label fw-medium">
+										(@application.NextActionDate?.ToString("dd MMM yyyy"))
+									</span>
+								}								
+							</p>
 						</div>
 					</div>
 				</div>
-			}
-			<div class="card shadow-sm">
+			</div>
+			<!-- Steps card -->
+
+			<!-- Files card -->
+			<div class="card shadow-sm mb-4">
 				<div class="card-body px-4">
 					<div class="card-title fw-medium fs-5 mb-3">
 						Files
@@ -81,13 +226,56 @@ else
 					</div>
 				</div>
 			</div>
+			<!-- Files card -->
+
+			<!-- Contact card -->
+			@if (!string.IsNullOrWhiteSpace(application.ContactName))
+			{
+				<div class="card shadow-sm mb-4">
+					<div class="card-body px-4">
+						<div class="card-title fw-medium fs-5 mb-3">
+							Contact
+						</div>
+						<div class="card-text fs-6">
+							<p class="mb-2">
+								<i class="bi bi-person"></i>
+								@application.ContactName
+							</p>
+							@if (!string.IsNullOrWhiteSpace(application.ContactEmail))
+							{
+								<p class="mb-2">
+									<i class="bi bi-envelope-at"></i>
+									<a href="mailto:@application.ContactEmail" class="text-decoration-none">
+										@application.ContactEmail
+									</a>
+								</p>
+							}						
+						</div>
+					</div>
+				</div>
+			}
+			<!-- Contact card -->
 		</div>
 	</div>	
 }
 
+<style>
+	.tiny-label {
+		font-size: 14px;
+		color: #64748B;
+		margin-bottom: 0;
+	}
+
+	.text-decoration-none:hover {
+		text-decoration: underline !important;
+	}
+</style>
+
 @code {
 	[Parameter]
 	public int? Id { get; set; }
+
+	private string Title { get; set; } = "Application Details";
 
 	private ApplicationModel? application;
 
@@ -96,6 +284,7 @@ else
 		if (Id.HasValue)
 		{
 			application = await ApplicationService.GetApplicationByIdAsync(Id.Value);
+			Title = $"{application?.JobTitle} - Application Details";
 		}
 		else
 		{
