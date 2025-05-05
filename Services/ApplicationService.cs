@@ -143,6 +143,15 @@ public class ApplicationService(HttpClient httpClient)
         }
     }
 
+    public async Task DeleteApplicationAsync(int id)
+    {
+        var response = await _httpClient.PatchAsync($"/api/applications/{id}/soft-delete", null);
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorMessage = await GetErrorMessageAsync(response);
+            throw new Exception($"Error deleting application: {errorMessage}");
+        }
+    }
 
     private static async Task<string> GetErrorMessageAsync(HttpResponseMessage response)
     {
