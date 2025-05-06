@@ -9,9 +9,12 @@ public class ApplicationService(HttpClient httpClient)
 {
     private readonly HttpClient _httpClient = httpClient;
 
-    public async Task<PaginatedModel<ApplicationModel>> GetApplicationsAsync()
+    public async Task<PaginatedModel<ApplicationModel>> GetApplicationsAsync(
+        int pageIndex = 1,
+        int pageSize = 9)
     {
-        var response = await _httpClient.GetAsync("/api/applications");
+        //var response = await _httpClient.GetAsync("/api/applications");
+        var response = await _httpClient.GetAsync($"/api/applications?pageIndex={pageIndex}&pageSize={pageSize}");
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync();
         var applications = JsonConvert.DeserializeObject<PaginatedModel<ApplicationModel>>(content);
@@ -145,7 +148,7 @@ public class ApplicationService(HttpClient httpClient)
 
     public async Task DeleteApplicationAsync(int id)
     {
-        var response = await _httpClient.PatchAsync($"/api/applications/{id}/soft-delete", null);
+        var response = await _httpClient.PatchAsync($"/api/applications/{id}/delete", null);
         if (!response.IsSuccessStatusCode)
         {
             var errorMessage = await GetErrorMessageAsync(response);

@@ -1,0 +1,111 @@
+﻿<nav aria-label="Pagination">
+    <ul class="pagination justify-content-end mt-4">
+        @if (HasPreviousPage)
+        {
+            <li class="page-item">
+                <a class="page-link" @onclick="() => ChangePage(1)">
+                    Début
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" @onclick="() => ChangePage(PageIndex - 1)">
+                    Précédent
+                </a>
+            </li>
+        }
+        else
+        {
+            <li class="page-item disabled">
+                <span class="page-link">Début</span>
+            </li>
+            <li class="page-item disabled">
+                <span class="page-link">Précédent</span>
+            </li>
+        }
+
+        @for (int i = 1; i <= TotalPages; i++)
+        {
+            if (i >= PageIndex - 2 && i <= PageIndex + 2)
+            {
+				int pageIndex = i;
+                <li class="page-item @(i == PageIndex ? "active" : "")">
+                    <a class="page-link" @onclick="() => ChangePage(pageIndex)">
+                        @pageIndex
+                    </a>
+                </li>
+            }
+            else if (i == PageIndex - 3 || i == PageIndex + 3)
+            {
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>
+            }
+        }
+
+        @if (HasNextPage)
+        {
+            <li class="page-item">
+                <a class="page-link" @onclick="() => ChangePage(PageIndex + 1)">
+                    Suivant
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" @onclick="() => ChangePage(TotalPages)">
+                    Fin
+                </a>
+            </li>
+        }
+        else
+        {
+            <li class="page-item disabled">
+                <span class="page-link">Suivant</span>
+            </li>
+            <li class="page-item disabled">
+                <span class="page-link">Fin</span>
+            </li>
+        }
+    </ul>
+</nav>
+
+<style>
+	.pagination {
+		margin: 0;
+		cursor: pointer;
+	}
+
+	.page-item.active .page-link {
+		background-color: #007bff;
+		border-color: #007bff;
+	}
+
+	.page-item.disabled .page-link {
+		color: #6c757d;
+		pointer-events: none;
+		background-color: transparent;
+		border-color: #dee2e6;
+	}
+</style>
+
+@code {
+    [Parameter]
+    public int PageIndex { get; set; }
+    [Parameter]
+    public int TotalItems { get; set; }
+    [Parameter]
+    public int PageSize { get; set; }
+    [Parameter]
+    public EventCallback<int> PageIndexChanged { get; set; }
+
+    private bool HasPreviousPage => PageIndex > 1;
+    private int TotalPages => (int)Math.Ceiling((double)TotalItems / PageSize);
+    private bool HasNextPage => PageIndex < TotalPages;
+
+    private async Task ChangePage(int newPageIndex)
+    {
+        if (newPageIndex != PageIndex && newPageIndex >= 1 && newPageIndex <= TotalPages)
+        {            
+            PageIndex = newPageIndex;
+		    await PageIndexChanged.InvokeAsync(newPageIndex);
+        }
+	}
+}
