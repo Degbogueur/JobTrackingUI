@@ -12,7 +12,7 @@
 		<a href="/applications/create" class="btn btn-primary">
 			<i class="bi bi-plus-circle"></i> New application
 		</a>
-		<a href="/applications/deleted" class="btn btn-outline-danger ms-2">
+		<a href="/applications/trash" class="btn btn-outline-danger ms-2">
 			<i class="bi bi-trash"></i> Deleted Applications
 		</a>
 	</div>
@@ -24,55 +24,133 @@
 }
 else
 {
-	<div class="row g-4">
-		@foreach (var application in applications.Items)
-		{
-			<div class="col-lg-4 col-md-6">
-				<div class="card shadow-sm h-100">
-					<div class="card-body p-4 d-flex flex-column h-100">
-						<div class="d-flex justify-content-between align-items-center">
-							<a class="card-title fw-medium mb-0" href="@($"/applications/{application.Id}")">
-								@application.JobTitle
-							</a>
-							<span class="badge bg-primary fw-medium rounded-pill">@application.Status</span>
-						</div>
-						<p class="card-text text-small mb-3">@application.CompanyName</p>
-						<div class="text-small text-muted" style="font-size: 13px;">
-							<p class="card-text mb-2">
-								<i class="bi bi-calendar4"></i> Applied on @application.ApplicationDate.ToString("dd MMM yyyy")
-							</p>
-							@if (application.NextActionDate.HasValue && application.NextAction != null)
-							{
-								<p class="card-text mb-0">
-									<i class="bi bi-calendar4"></i> @application.NextAction on @application.NextActionDate?.ToString("dd MMM yyyy")
+	@* <div class="d-flex justify-content-between align-items-center mb-4">
+		<InputText @bind-Value="searchTerm" class="form-control me-2 fs-8" placeholder="Search applications by title..." />
+		<div class="me-2">
+			<button class="btn border" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+				<i class="bi bi-funnel"></i> Filtrer
+			</button>
+			<ul class="dropdown-menu" aria-labelledby="filterDropdown">
+				<li><h6 class="dropdown-header">Type de document</h6></li>
+				<li><a class="dropdown-item" href="#"><i class="fas fa-folder text-warning"></i> Dossiers</a></li>
+				<li><a class="dropdown-item" href="#"><i class="fas fa-file-word text-primary"></i> Documents</a></li>
+				<li><a class="dropdown-item" href="#"><i class="fas fa-file-excel text-success"></i> Feuilles de calcul</a></li>
+				<li><a class="dropdown-item" href="#"><i class="fas fa-file-powerpoint text-danger"></i> Présentations</a></li>
+				<li><a class="dropdown-item" href="#"><i class="fas fa-file-pdf text-danger"></i> PDF</a></li>
+				<li><a class="dropdown-item" href="#"><i class="fas fa-file-image text-primary"></i> Images</a></li>
+				<li><div class="dropdown-divider"></div></li>
+				<li><h6 class="dropdown-header">Date</h6></li>
+				<li><a class="dropdown-item" href="#">Aujourd'hui</a></li>
+				<li><a class="dropdown-item" href="#">Cette semaine</a></li>
+				<li><a class="dropdown-item" href="#">Ce mois</a></li>
+				<li><a class="dropdown-item" href="#">Cette année</a></li>
+			</ul>
+		</div>
+		<div class="btn-group">
+			<button class="btn btn-white dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+				<i class="fas fa-sort-amount-down"></i> Trier
+			</button>
+			<ul class="dropdown-menu" aria-labelledby="sortDropdown">
+				<li><a class="dropdown-item" href="#" data-sort="name-asc"><i class="fas fa-sort-alpha-down"></i> Nom (A-Z)</a></li>
+				<li><a class="dropdown-item" href="#" data-sort="name-desc"><i class="fas fa-sort-alpha-down-alt"></i> Nom (Z-A)</a></li>
+				<li><a class="dropdown-item" href="#" data-sort="date-asc"><i class="fas fa-sort-numeric-down"></i> Date (Plus anciens)</a></li>
+				<li><a class="dropdown-item" href="#" data-sort="date-desc"><i class="fas fa-sort-numeric-down-alt"></i> Date (Plus récents)</a></li>
+				<li><a class="dropdown-item" href="#" data-sort="size-asc"><i class="fas fa-sort-amount-down-alt"></i> Taille (Plus petit)</a></li>
+				<li><a class="dropdown-item" href="#" data-sort="size-desc"><i class="fas fa-sort-amount-down"></i> Taille (Plus grand)</a></li>
+			</ul>
+		</div>
+	</div> *@
+	<div class="my-4">
+		<div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4 gap-3">
+
+			<!-- Barre de filtre -->
+			<div class="d-flex flex-column flex-sm-row gap-3 w-100">
+				<div class="flex-fill position-relative">
+					<input type="text" class="form-control" @oninput="OnSearchInput" placeholder="Search by title..." />
+				</div>
+
+				<div class="d-flex gap-2">
+					<button class="btn btn-light border d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#filterModal">
+						<i class="bi bi-funnel me-2"></i> Filters
+					</button>
+
+					<select class="form-select w-auto">
+						<option disabled selected>Sort by</option>
+						<option>Date de candidature</option>
+						<option>Nom</option>
+						<option>Statut</option>
+					</select>
+				</div>
+			</div>
+
+			<!-- Boutons de disposition -->
+			<div class="d-flex align-items-center gap-2">
+				<button class="btn btn-primary">
+					<i class="bi bi-grid-fill"></i>
+				</button>
+				<button class="btn btn-outline-secondary">
+					<i class="bi bi-list"></i>
+				</button>
+			</div>
+		</div>
+	</div>
+
+	@if (isLoading)
+	{
+		<Spinner />
+	}
+	else
+	{
+		<div class="row g-4">
+			@foreach (var application in applications.Items)
+			{
+				<div class="col-lg-4 col-md-6">
+					<div class="card shadow-sm h-100">
+						<div class="card-body p-4 d-flex flex-column h-100">
+							<div class="d-flex justify-content-between align-items-center">
+								<a class="card-title fw-medium mb-0" href="@($"/applications/{application.Id}")">
+									@application.JobTitle
+								</a>
+								<span class="badge bg-primary fw-medium rounded-pill">@application.Status</span>
+							</div>
+							<p class="card-text text-small mb-3">@application.CompanyName</p>
+							<div class="text-small text-muted" style="font-size: 13px;">
+								<p class="card-text mb-2">
+									<i class="bi bi-calendar4"></i> Applied on @application.ApplicationDate.ToString("dd MMM yyyy")
 								</p>
-							}
-						</div>
-						<p class="mt-2 text-truncate">
-							@(application.JobDescription ?? "No description submitted")
-						</p>
-						<div class="d-flex justify-content-end align-items-center mt-auto gap-3">
-							<a href="@($"/applications/{application.Id}")" class="btn btn-outline-primary btn-sm">
-								<i class="bi bi-eye"></i>
-							</a>
-							<a href="@($"/applications/edit/{application.Id}")" class="btn btn-outline-secondary btn-sm">
-								<i class="bi bi-pencil-square"></i>
-							</a>
-							<a role="button" class="btn btn-outline-danger btn-sm" data-bs-target="#deleteModal" data-bs-toggle="modal" @onclick="() => DisplayDeleteModal(application)">
-								<i class="bi bi-trash"></i>
-							</a>
+								@if (application.NextActionDate.HasValue && application.NextAction != null)
+								{
+									<p class="card-text mb-0">
+										<i class="bi bi-calendar4"></i> @application.NextAction on @application.NextActionDate?.ToString("dd MMM yyyy")
+									</p>
+								}
+							</div>
+							<p class="mt-2 text-truncate">
+								@(application.JobDescription ?? "No description submitted")
+							</p>
+							<div class="d-flex justify-content-end align-items-center mt-auto gap-2">
+								<a href="@($"/applications/{application.Id}")" class="btn btn-outline-primary btn-sm">
+									<i class="bi bi-eye"></i>
+								</a>
+								<a href="@($"/applications/edit/{application.Id}")" class="btn btn-outline-secondary btn-sm">
+									<i class="bi bi-pencil-square"></i>
+								</a>
+								<a role="button" class="btn btn-outline-danger btn-sm" data-bs-target="#deleteModal" data-bs-toggle="modal" @onclick="() => DisplayDeleteModal(application)">
+									<i class="bi bi-trash"></i>
+								</a>
+							</div>
 						</div>
 					</div>
 				</div>
-			</div>
-		}
-	</div>
+			}
+		</div>
+	}	
 
 	<div class="d-flex justify-content-center mt-4">
 		<Pagination PageIndex="applications.PageIndex" 
-					PageSize="applications.PageSize" 
-					TotalItems="applications.TotalItems"
-					PageIndexChanged="OnPageChanged" />
+		PageSize="applications.PageSize" 
+		TotalItems="applications.TotalItems"
+		PageIndexChanged="OnPageChanged" />
 	</div>
 }
 
@@ -125,9 +203,11 @@ else
 	PaginatedModel<ApplicationModel>? applications;
 	private ApplicationModel? selectedApplication;
 
+	private bool isLoading = false;
+	private string? searchTerm;
+
 	protected override async Task OnInitializedAsync()
 	{
-		// await Task.Delay(1000);
 		applications = await ApplicationService.GetApplicationsAsync();
 	}
 
@@ -153,5 +233,14 @@ else
 	private async Task OnPageChanged(int pageIndex)
 	{
 		applications = await ApplicationService.GetApplicationsAsync(pageIndex);
+	}
+
+	private async Task OnSearchInput(ChangeEventArgs e)
+	{
+		isLoading = true;
+		if (!string.IsNullOrWhiteSpace(e.Value?.ToString()))
+		{
+			searchTerm = e.Value?.ToString() ?? string.Empty;
+		}
 	}
 }

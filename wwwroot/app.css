@@ -45,3 +45,11 @@ h1:focus {
     content: " *";
     color: #e50000;
 }
+
+.fs-7 {
+    font-size: 14px !important;
+}
+
+.fs-8 {
+    font-size: 13px !important;
+}

@@ -13,8 +13,18 @@ public class ApplicationService(HttpClient httpClient)
         int pageIndex = 1,
         int pageSize = 9)
     {
-        //var response = await _httpClient.GetAsync("/api/applications");
         var response = await _httpClient.GetAsync($"/api/applications?pageIndex={pageIndex}&pageSize={pageSize}");
+        response.EnsureSuccessStatusCode();
+        var content = await response.Content.ReadAsStringAsync();
+        var applications = JsonConvert.DeserializeObject<PaginatedModel<ApplicationModel>>(content);
+        return applications ?? new PaginatedModel<ApplicationModel>();
+    }
+
+    public async Task<PaginatedModel<ApplicationModel>> GetDeletedApplicationsAsync(
+        int pageIndex = 1,
+        int pageSize = 9)
+    {
+        var response = await _httpClient.GetAsync($"/api/applications/trash?pageIndex={pageIndex}&pageSize={pageSize}");
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync();
         var applications = JsonConvert.DeserializeObject<PaginatedModel<ApplicationModel>>(content);
