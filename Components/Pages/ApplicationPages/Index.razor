@@ -1,8 +1,10 @@
 ﻿@page "/applications"
+@using System.Threading
 @inject ApplicationService ApplicationService
-@attribute [StreamRendering]
-@rendermode InteractiveServer
 @inject NavigationManager NavigationManager
+@implements IDisposable
+@rendermode InteractiveServer
+@attribute [StreamRendering]
 
 <PageTitle>Applications</PageTitle>
 
@@ -66,7 +68,7 @@ else
 			<!-- Barre de filtre -->
 			<div class="d-flex flex-column flex-sm-row gap-3 w-100">
 				<div class="flex-fill position-relative">
-					<input type="text" class="form-control" @oninput="OnSearchInput" placeholder="Search by title..." />
+					<input type="text" class="form-control" @oninput="OnSearchInput" placeholder="Search by title, company or location..." />
 				</div>
 
 				<div class="d-flex gap-2">
@@ -113,7 +115,10 @@ else
 								</a>
 								<span class="badge bg-primary fw-medium rounded-pill">@application.Status</span>
 							</div>
-							<p class="card-text text-small mb-3">@application.CompanyName</p>
+							<p class="card-text text-small mb-3">
+								@application.CompanyName
+								<span class="text-muted ms-3"><i class="bi bi-geo-alt"></i>@application.Location</span>
+							</p>
 							<div class="text-small text-muted" style="font-size: 13px;">
 								<p class="card-text mb-2">
 									<i class="bi bi-calendar4"></i> Applied on @application.ApplicationDate.ToString("dd MMM yyyy")
@@ -203,6 +208,7 @@ else
 	PaginatedModel<ApplicationModel>? applications;
 	private ApplicationModel? selectedApplication;
 
+	private Timer? searchTimer;
 	private bool isLoading = false;
 	private string? searchTerm;
 
@@ -232,15 +238,34 @@ else
 
 	private async Task OnPageChanged(int pageIndex)
 	{
-		applications = await ApplicationService.GetApplicationsAsync(pageIndex);
+		applications = await ApplicationService.GetApplicationsAsync(new QueryParameters { PageIndex = pageIndex });
 	}
 
-	private async Task OnSearchInput(ChangeEventArgs e)
+	private void OnSearchInput(ChangeEventArgs e)
 	{
+		var newSearchTerm = e.Value?.ToString() ?? string.Empty;
+
+		searchTimer?.Dispose();
+
 		isLoading = true;
-		if (!string.IsNullOrWhiteSpace(e.Value?.ToString()))
+		StateHasChanged();
+
+		searchTimer = new Timer(async _ =>
 		{
-			searchTerm = e.Value?.ToString() ?? string.Empty;
-		}
+			await InvokeAsync(async () =>
+			{
+				searchTerm = newSearchTerm;
+
+				applications = await ApplicationService.GetApplicationsAsync( new QueryParameters { SearchTerm = searchTerm });
+				
+				isLoading = false;
+				StateHasChanged();
+			});
+		}, null, 500, Timeout.Infinite);
+	}
+
+	public void Dispose()
+	{
+		searchTimer?.Dispose();
 	}
 }

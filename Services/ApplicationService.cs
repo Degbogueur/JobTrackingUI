@@ -9,11 +9,15 @@ public class ApplicationService(HttpClient httpClient)
 {
     private readonly HttpClient _httpClient = httpClient;
 
-    public async Task<PaginatedModel<ApplicationModel>> GetApplicationsAsync(
-        int pageIndex = 1,
-        int pageSize = 9)
+    public async Task<PaginatedModel<ApplicationModel>> GetApplicationsAsync(QueryParameters? parameters = null)
     {
-        var response = await _httpClient.GetAsync($"/api/applications?pageIndex={pageIndex}&pageSize={pageSize}");
+        parameters ??= new QueryParameters();
+        var pageIndex = parameters.PageIndex;
+        var pageSize = parameters.PageSize;
+        var searchTerm = parameters.SearchTerm;
+
+        var response = await _httpClient.GetAsync(
+            $"/api/applications?pageIndex={pageIndex}&pageSize={pageSize}&searchTerm={searchTerm}");
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync();
         var applications = JsonConvert.DeserializeObject<PaginatedModel<ApplicationModel>>(content);
@@ -185,4 +189,13 @@ public class ApplicationService(HttpClient httpClient)
         }
     }
 
+}
+
+public class QueryParameters
+{
+    public int PageIndex { get; set; } = 1;
+    public int PageSize { get; set; } = 9;
+    public string? SearchTerm { get; set; }
+    //public string? SortBy { get; set; }
+    //public string? SortOrder { get; set; }
 }
