@@ -37,7 +37,7 @@ else
 				</div>
 
 				<button class="btn btn-light border d-flex align-items-center" data-bs-auto-close="outside"
-					type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+				type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
 					<i class="bi bi-funnel me-2"></i> Filters
 				</button>
 				<div class="dropdown-menu columns-2" aria-labelledby="filterDropdown" 
@@ -51,8 +51,8 @@ else
 								<div class="col-12 col-md-6">
 									<div class="form-check ms-3">
 										<input class="form-check-input" type="checkbox"
-											   @bind="@statusFilters[status.Id]"
-											   id="@status.Name">
+										@bind="@statusFilters[status.Id]"
+										id="@status.Name">
 										<label class="form-check-label" for="@status.Name">@status.Name</label>
 									</div>
 								</div>
@@ -68,8 +68,8 @@ else
 								<div class="col-12 col-md-6">
 									<div class="form-check ms-3">
 										<input class="form-check-input" type="checkbox"
-											   @bind="@priorityFilters[priority.Id]"
-											   id="@priority.Name">
+										@bind="@priorityFilters[priority.Id]"
+										id="@priority.Name">
 										<label class="form-check-label" for="@priority.Name">@priority.Name</label>
 									</div>
 								</div>
@@ -115,10 +115,12 @@ else
 
 			<!-- Boutons de disposition -->
 			<div class="d-flex align-items-center gap-2">
-				<button class="btn btn-primary">
-					<i class="bi bi-grid-fill"></i>
+				<button class="btn @(isGridView ? "btn-primary" : "btn-outline-secondary")"
+				@onclick="ToggleView">
+					<i class="bi bi-grid"></i>
 				</button>
-				<button class="btn btn-outline-secondary">
+				<button class="btn @(!isGridView ? "btn-primary" : "btn-outline-secondary")"
+				@onclick="ToggleView">
 					<i class="bi bi-list"></i>
 				</button>
 			</div>
@@ -139,63 +141,117 @@ else
 		}
 		else 
 		{
-			<div class="row g-4">
-				@foreach (var application in applications.Items)
-				{
-					<div class="col-lg-4 col-md-6">
-						<div class="card shadow-sm h-100">
-							<div class="card-body p-4 d-flex flex-column h-100">
-								<div class="d-flex justify-content-between align-items-center">
-									<a class="card-title fw-medium mb-0" href="@($"/applications/{application.Id}")">
-										@application.JobTitle
-									</a>
-									<span class="badge bg-primary fw-medium rounded-pill">@application.Status</span>
-								</div>
-								<p class="card-text text-small mb-3">
-									@application.CompanyName
-									<span class="text-muted ms-3"><i class="bi bi-geo-alt"></i>@application.Location</span>
-								</p>
-								<div class="text-small text-muted" style="font-size: 13px;">
-									<p class="card-text mb-2">
-										<i class="bi bi-calendar4"></i> Applied on @application.ApplicationDate.ToString("dd MMM yyyy")
+			@if (isGridView)
+			{
+				<div class="row g-4">
+					@foreach (var application in applications.Items)
+					{
+						<div class="col-lg-4 col-md-6">
+							<div class="card shadow-sm h-100">
+								<div class="card-body p-4 d-flex flex-column h-100">
+									<div class="d-flex justify-content-between align-items-center">
+										<a class="card-title fw-medium mb-0" href="@($"/applications/{application.Id}")">
+											@application.JobTitle
+										</a>
+										<span class="badge bg-primary fw-medium rounded-pill">@application.Status</span>
+									</div>
+									<p class="card-text text-small mb-3">
+										@application.CompanyName
+										<span class="text-muted ms-3"><i class="bi bi-geo-alt"></i>@application.Location</span>
 									</p>
-									@if (application.NextActionDate.HasValue && application.NextAction != null)
-									{
-										<p class="card-text mb-0">
-											<i class="bi bi-calendar4"></i> @application.NextAction on @application.NextActionDate?.ToString("dd MMM yyyy")
+									<div class="text-small text-muted" style="font-size: 13px;">
+										<p class="card-text mb-2">
+											<i class="bi bi-calendar4"></i> Applied on @application.ApplicationDate.ToString("dd MMM yyyy")
 										</p>
-									}
-								</div>
-								<p class="mt-2 text-truncate">
-									@(application.JobDescription ?? "No description submitted")
-								</p>
-								<div class="d-flex justify-content-end align-items-center mt-auto gap-2">
-									<a href="@($"/applications/{application.Id}")" class="btn btn-outline-primary btn-sm">
-										<i class="bi bi-eye"></i>
-									</a>
-									<a href="@($"/applications/edit/{application.Id}")" class="btn btn-outline-secondary btn-sm">
-										<i class="bi bi-pencil-square"></i>
-									</a>
-									<a role="button" class="btn btn-outline-danger btn-sm" data-bs-target="#deleteModal" data-bs-toggle="modal" @onclick="() => DisplayDeleteModal(application)">
-										<i class="bi bi-trash"></i>
-									</a>
+										@if (application.NextActionDate.HasValue && application.NextAction != null)
+										{
+											<p class="card-text mb-0">
+												<i class="bi bi-calendar4"></i> @application.NextAction on @application.NextActionDate?.ToString("dd MMM yyyy")
+											</p>
+										}
+									</div>
+									<p class="mt-2 text-truncate">
+										@(application.JobDescription ?? "No description submitted")
+									</p>
+									<div class="d-flex justify-content-end align-items-center mt-auto gap-2">
+										<a href="@($"/applications/{application.Id}")" class="btn btn-outline-primary btn-sm">
+											<i class="bi bi-eye"></i>
+										</a>
+										<a href="@($"/applications/edit/{application.Id}")" class="btn btn-outline-secondary btn-sm">
+											<i class="bi bi-pencil-square"></i>
+										</a>
+										<a role="button" class="btn btn-outline-danger btn-sm" data-bs-target="#deleteModal" data-bs-toggle="modal" @onclick="() => DisplayDeleteModal(application)">
+											<i class="bi bi-trash"></i>
+										</a>
+									</div>
 								</div>
 							</div>
 						</div>
-					</div>
-				}
-			</div>
+					}
+				</div>
+			}
+			else
+			{
+				<table class="table border table-hover table-striped vertical-align-middle fixed-height">
+					<thead class="table-light" style="vertical-align: middle;">
+						<tr>
+							<th scope="col">Job title</th>
+							<th scope="col">Company</th>
+							<th scope="col">Location</th>
+							<th scope="col">Application date</th>
+							<th scope="col">Status</th>
+							<th scope="col">Next action</th>
+							<th scope="col">Actions</th>
+						</tr>
+					</thead>
+					<tbody class="table-group-divider">
+						@foreach (var application in applications.Items)
+						{
+							<tr>
+								<td class="fw-medium">
+									<a class="job-title fw-medium mb-0" href="@($"/applications/{application.Id}")">
+										@application.JobTitle
+									</a>
+								</td>
+								<td>@application.CompanyName</td>
+								<td>@application.Location</td>
+								<td>@application.ApplicationDate.ToShortDateString()</td>
+								<td>
+									<span class="badge bg-primary fw-medium rounded-pill">@application.Status</span>
+								</td>
+								<td>
+									@application.NextAction
+									<p class="small text-muted mb-0">@application.NextActionDate?.ToShortDateString()</p>
+								</td>
+								<td>
+									<div class="btn-group">
+										<a href="@($"/applications/{application.Id}")" class="btn btn-outline-primary btn-sm">
+											<i class="bi bi-eye"></i>
+										</a>
+										<a href="@($"/applications/edit/{application.Id}")" class="btn btn-outline-secondary btn-sm">
+											<i class="bi bi-pencil-square"></i>
+										</a>
+										<a role="button" class="btn btn-outline-danger btn-sm" data-bs-target="#deleteModal" data-bs-toggle="modal" @onclick="() => DisplayDeleteModal(application)">
+											<i class="bi bi-trash"></i>
+										</a>
+									</div>									
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			}
 
 			<div class="d-flex justify-content-center mt-4">
 				<Pagination PageIndex="applications.PageIndex"
-							PageSize="applications.PageSize"
-							TotalItems="applications.TotalItems"
-							PageIndexChanged="OnPageChanged" />
+				PageSize="applications.PageSize"
+				TotalItems="applications.TotalItems"
+				PageIndexChanged="OnPageChanged" />
 			</div>
 		}		
 	}
 
-	
+
 }
 
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
@@ -220,13 +276,16 @@ else
 </div>
 
 <style>
-	.card-title {
-	font-size: 18px;
+	.card-title, a.job-title {	
 	color: #000;
 	text-decoration: none;
 	}
 
-	.card-title:hover {
+	.card-title {
+		font-size: 18px;
+	}
+
+	.card-title:hover, a.job-title:hover {
 	text-decoration: underline;
 	color: var(--bs-primary);
 	}
@@ -239,6 +298,14 @@ else
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	}
+
+	.vertical-align-middle {
+		vertical-align: middle;
+	}
+
+	.fixed-height tr {
+		height: 60px;
 	}
 </style>
 
@@ -254,6 +321,7 @@ else
 	private string? sortBy;
 	private Dictionary<int, bool> statusFilters = new();
 	private Dictionary<int, bool> priorityFilters = new();
+	private bool isGridView = true;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -376,5 +444,10 @@ else
 
 		isLoading = false;
 		StateHasChanged();
+	}
+
+	private void ToggleView()
+	{
+		isGridView = !isGridView;
 	}
 }

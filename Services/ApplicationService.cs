@@ -28,7 +28,7 @@ public class ApplicationService(HttpClient httpClient)
         {
             { "pageIndex", pageIndex.ToString() },
             { "pageSize", pageSize.ToString() },
-            { "searchTerm", searchTerm },
+            { "searchTerm", searchTerm ?? string.Empty },
             { "sortBy", sortBy },
             { "statusFilters", statusFilters ?? string.Empty },
             { "priorityFilters", priorityFilters ?? string.Empty }
@@ -36,15 +36,6 @@ public class ApplicationService(HttpClient httpClient)
 
         var url = QueryHelpers.AddQueryString("/api/applications", queryParameters!);
         var response = await _httpClient.GetAsync(url);
-
-        //var response = await _httpClient
-        //    .GetAsync($"/api/applications" +
-        //              $"?pageIndex={pageIndex}" +
-        //              $"&pageSize={pageSize}" +
-        //              $"&searchTerm={searchTerm}" +
-        //              $"&sortBy={sortBy}" +
-        //              $"&statusFilters={statusFilters}" +
-        //              $"&priorityFilters={priorityFilters}");
 
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync();
