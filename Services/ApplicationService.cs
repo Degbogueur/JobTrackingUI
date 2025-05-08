@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Headers;
 using JobTrackingUI.PageModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
 
 namespace JobTrackingUI.Services;
@@ -15,9 +16,36 @@ public class ApplicationService(HttpClient httpClient)
         var pageIndex = parameters.PageIndex;
         var pageSize = parameters.PageSize;
         var searchTerm = parameters.SearchTerm;
+        var sortBy = parameters.SortBy ?? "date-desc";
+        var statusFilters = parameters.StatusFilters != null && parameters.StatusFilters.Length > 0
+            ? string.Join(",", parameters.StatusFilters)
+            : null;
+        var priorityFilters = parameters.PriorityFilters != null && parameters.PriorityFilters.Length > 0
+            ? string.Join(",", parameters.PriorityFilters)
+            : null;
 
-        var response = await _httpClient.GetAsync(
-            $"/api/applications?pageIndex={pageIndex}&pageSize={pageSize}&searchTerm={searchTerm}");
+        var queryParameters = new Dictionary<string, string>
+        {
+            { "pageIndex", pageIndex.ToString() },
+            { "pageSize", pageSize.ToString() },
+            { "searchTerm", searchTerm },
+            { "sortBy", sortBy },
+            { "statusFilters", statusFilters ?? string.Empty },
+            { "priorityFilters", priorityFilters ?? string.Empty }
+        };
+
+        var url = QueryHelpers.AddQueryString("/api/applications", queryParameters!);
+        var response = await _httpClient.GetAsync(url);
+
+        //var response = await _httpClient
+        //    .GetAsync($"/api/applications" +
+        //              $"?pageIndex={pageIndex}" +
+        //              $"&pageSize={pageSize}" +
+        //              $"&searchTerm={searchTerm}" +
+        //              $"&sortBy={sortBy}" +
+        //              $"&statusFilters={statusFilters}" +
+        //              $"&priorityFilters={priorityFilters}");
+
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync();
         var applications = JsonConvert.DeserializeObject<PaginatedModel<ApplicationModel>>(content);
@@ -196,6 +224,7 @@ public class QueryParameters
     public int PageIndex { get; set; } = 1;
     public int PageSize { get; set; } = 9;
     public string? SearchTerm { get; set; }
-    //public string? SortBy { get; set; }
-    //public string? SortOrder { get; set; }
+    public string? SortBy { get; set; } = "date-desc";
+    public int[]? StatusFilters { get; set; }
+    public int[]? PriorityFilters { get; set; }
 }
