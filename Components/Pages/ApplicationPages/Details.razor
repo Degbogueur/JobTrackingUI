@@ -98,7 +98,7 @@ else
 						</div>
 						@if (application.MinSalaryProposed.HasValue && application.MaxSalaryProposed.HasValue)
 						{
-							<div class="col mt-md-0">
+							<div class="col">
 								<p class="tiny-label fw-medium">Proposed salary</p>
 								<p class="mb-0 fs-6 fw-medium">
 									@($"{application.MinSalaryProposed:#,0.00} - {application.MaxSalaryProposed:#,0.00} {application.Currency}")
@@ -107,7 +107,7 @@ else
 						}
 						@if (application.MinSalaryOffered.HasValue && application.MaxSalaryOffered.HasValue)
 						{
-							<div class="col mt-md-0">
+							<div class="col">
 								<p class="tiny-label fw-medium">Offered salary</p>
 								<p class="mb-0 fs-6 fw-medium">
 									@($"{application.MinSalaryOffered:#,0.00} - {application.MaxSalaryOffered:#,0.00} {application.Currency}")
