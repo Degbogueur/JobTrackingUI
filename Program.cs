@@ -1,4 +1,5 @@
 using JobTrackingUI.Components;
+using JobTrackingUI.Helpers;
 using JobTrackingUI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +16,8 @@ builder.Services.AddHttpClient<ApplicationService>(
 
 builder.Services.AddHttpClient<EnumService>(
     client => client.BaseAddress = new Uri(webApiBaseUrl));
+
+builder.Services.AddScoped<FileHelpers>();
 
 var app = builder.Build();
 

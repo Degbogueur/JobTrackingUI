@@ -49,7 +49,7 @@ else
 					</div>
 					<h5 class="fw-medium">Job description</h5>
 					<p class="card-text text-small mb-4">@application.JobDescription</p>
-					
+
 					<div class="row row-cols-1 row-cols-sm-2 g-3">
 						<div class="col">
 							<p class="tiny-label fw-medium">Contract type</p>
@@ -83,8 +83,8 @@ else
 							<p class="tiny-label fw-medium">Interest level</p>
 							<p class="mb-0 fs-6 fw-medium">
 								<Rating CurrentRating="@application.InterestLevel"
-										IsReadOnly="true"
-										SizeClass="rating-sm" />
+								IsReadOnly="true"
+								SizeClass="rating-sm" />
 							</p>
 						</div>
 						<div class="col">
@@ -210,10 +210,10 @@ else
 					<div class="card-text fs-6">
 						<p class="mb-2">
 							<i class="bi bi-file-earmark-person"></i>
-							<a href="@application.ResumeFilePath" class="text-decoration-none fw-medium">
+							<a href="@application.ResumeFilePath" target="_blank" class="text-decoration-none fw-medium">
 								Resume
 							</a>
-							<span class="text-muted">(PDF)</span>
+							<span class="text-muted small">(@application.ResumeFileName)</span>
 						</p>
 						@if (!string.IsNullOrWhiteSpace(application.CoverLetterFilePath))
 						{
@@ -222,6 +222,7 @@ else
 								<a href="@application.CoverLetterFilePath" class="text-decoration-none fw-medium">
 									Cover Letter
 								</a>
+								<span class="text-muted small">(@application.CoverLetterFileName)</span>
 							</p>
 						}
 					</div>
@@ -283,13 +284,13 @@ else
 
 <style>
 	.tiny-label {
-		font-size: 14px;
-		color: #64748B;
-		margin-bottom: 0;
+	font-size: 14px;
+	color: #64748B;
+	margin-bottom: 0;
 	}
 
 	.text-decoration-none:hover {
-		text-decoration: underline !important;
+	text-decoration: underline !important;
 	}
 </style>
 

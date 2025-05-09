@@ -1,4 +1,5 @@
 ﻿using System.Net.Http.Headers;
+using JobTrackingUI.Helpers;
 using JobTrackingUI.PageModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
@@ -6,9 +7,10 @@ using Newtonsoft.Json;
 
 namespace JobTrackingUI.Services;
 
-public class ApplicationService(HttpClient httpClient)
+public class ApplicationService(HttpClient httpClient, FileHelpers fileHelpers)
 {
     private readonly HttpClient _httpClient = httpClient;
+    private readonly FileHelpers _fileHelpers = fileHelpers;
 
     public async Task<PaginatedModel<ApplicationModel>> GetApplicationsAsync(QueryParameters? parameters = null)
     {
@@ -28,7 +30,7 @@ public class ApplicationService(HttpClient httpClient)
         {
             { "pageIndex", pageIndex.ToString() },
             { "pageSize", pageSize.ToString() },
-            { "searchTerm", searchTerm ?? string.Empty },
+            { "searchTerm", searchTerm },
             { "sortBy", sortBy },
             { "statusFilters", statusFilters ?? string.Empty },
             { "priorityFilters", priorityFilters ?? string.Empty }
@@ -60,7 +62,13 @@ public class ApplicationService(HttpClient httpClient)
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync();
         var application = JsonConvert.DeserializeObject<ApplicationModel>(content);
-        return application ?? new ApplicationModel();
+        if (application != null)
+        {
+            application.ResumeFilePath = _fileHelpers.GetFilePath(application.ResumeFilePath) ?? string.Empty;
+            application.CoverLetterFilePath = _fileHelpers.GetFilePath(application.CoverLetterFilePath);
+                return application;
+        }
+        return new ApplicationModel();
     }
 
     public async Task<bool> CreateApplicationAsync(CreateApplicationModel application)
