@@ -283,8 +283,8 @@ else
 		if (id.HasValue)
 		{
 			await ApplicationService.DeleteApplicationAsync(id.Value);
-
-			deletedApplications = await ApplicationService.GetDeletedApplicationsAsync();
+			var parameters = GetQueryParameters();
+			deletedApplications = await ApplicationService.GetDeletedApplicationsAsync(parameters);
 		}
 		else
 		{
@@ -297,8 +297,8 @@ else
 		if (id.HasValue)
 		{
 			await ApplicationService.RestoreApplicationAsync(id.Value);
-
-			deletedApplications = await ApplicationService.GetDeletedApplicationsAsync();
+			var parameters = GetQueryParameters();
+			deletedApplications = await ApplicationService.GetDeletedApplicationsAsync(parameters);
 		}
 		else
 		{

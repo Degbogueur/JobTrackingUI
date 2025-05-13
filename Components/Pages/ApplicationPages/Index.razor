@@ -339,8 +339,8 @@ else
 		if (id.HasValue)
 		{
 			await ApplicationService.SoftDeleteApplicationAsync(id.Value);
-
-			applications = await ApplicationService.GetApplicationsAsync();
+			var parameters = GetQueryParameters();
+			applications = await ApplicationService.GetApplicationsAsync(parameters);
 		}
 		else
 		{
