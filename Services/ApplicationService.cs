@@ -12,29 +12,10 @@ public class ApplicationService(HttpClient httpClient, FileHelpers fileHelpers)
     private readonly HttpClient _httpClient = httpClient;
     private readonly FileHelpers _fileHelpers = fileHelpers;
 
-    public async Task<PaginatedModel<ApplicationModel>> GetApplicationsAsync(QueryParameters? parameters = null)
+    public async Task<PaginatedModel<ApplicationModel>> GetApplicationsAsync(
+        QueryParameters? parameters = null)
     {
-        parameters ??= new QueryParameters();
-        var pageIndex = parameters.PageIndex;
-        var pageSize = parameters.PageSize;
-        var searchTerm = parameters.SearchTerm;
-        var sortBy = parameters.SortBy ?? "date-desc";
-        var statusFilters = parameters.StatusFilters != null && parameters.StatusFilters.Length > 0
-            ? string.Join(",", parameters.StatusFilters)
-            : null;
-        var priorityFilters = parameters.PriorityFilters != null && parameters.PriorityFilters.Length > 0
-            ? string.Join(",", parameters.PriorityFilters)
-            : null;
-
-        var queryParameters = new Dictionary<string, string>
-        {
-            { "pageIndex", pageIndex.ToString() },
-            { "pageSize", pageSize.ToString() },
-            { "searchTerm", searchTerm },
-            { "sortBy", sortBy },
-            { "statusFilters", statusFilters ?? string.Empty },
-            { "priorityFilters", priorityFilters ?? string.Empty }
-        };
+        var queryParameters = GetQueryParameters(parameters);
 
         var url = QueryHelpers.AddQueryString("/api/applications", queryParameters!);
         var response = await _httpClient.GetAsync(url);
@@ -46,10 +27,13 @@ public class ApplicationService(HttpClient httpClient, FileHelpers fileHelpers)
     }
 
     public async Task<PaginatedModel<ApplicationModel>> GetDeletedApplicationsAsync(
-        int pageIndex = 1,
-        int pageSize = 9)
+        QueryParameters? parameters = null)
     {
-        var response = await _httpClient.GetAsync($"/api/applications/trash?pageIndex={pageIndex}&pageSize={pageSize}");
+        var queryParameters = GetQueryParameters(parameters);
+
+        var url = QueryHelpers.AddQueryString("/api/applications/trash", queryParameters!);
+        var response = await _httpClient.GetAsync(url);
+
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync();
         var applications = JsonConvert.DeserializeObject<PaginatedModel<ApplicationModel>>(content);
@@ -217,6 +201,33 @@ public class ApplicationService(HttpClient httpClient, FileHelpers fileHelpers)
         }
     }
 
+    private static Dictionary<string, string> GetQueryParameters(
+        QueryParameters? parameters = null)
+    {
+        parameters ??= new QueryParameters();
+        var pageIndex = parameters.PageIndex;
+        var pageSize = parameters.PageSize;
+        var searchTerm = parameters.SearchTerm;
+        var sortBy = parameters.SortBy ?? "date-desc";
+        var statusFilters = parameters.StatusFilters != null && parameters.StatusFilters.Length > 0
+            ? string.Join(",", parameters.StatusFilters)
+            : null;
+        var priorityFilters = parameters.PriorityFilters != null && parameters.PriorityFilters.Length > 0
+            ? string.Join(",", parameters.PriorityFilters)
+            : null;
+
+        var queryParameters = new Dictionary<string, string>
+        {
+            { "pageIndex", pageIndex.ToString() },
+            { "pageSize", pageSize.ToString() },
+            { "searchTerm", searchTerm },
+            { "sortBy", sortBy },
+            { "statusFilters", statusFilters ?? string.Empty },
+            { "priorityFilters", priorityFilters ?? string.Empty }
+        };
+        return queryParameters;
+    }
+
     private static async Task<string> GetErrorMessageAsync(HttpResponseMessage response)
     {
         var content = await response.Content.ReadAsStringAsync();
@@ -235,7 +246,6 @@ public class ApplicationService(HttpClient httpClient, FileHelpers fileHelpers)
             return "Une erreur inattendue s'est produite.";
         }
     }
-
 }
 
 public class QueryParameters

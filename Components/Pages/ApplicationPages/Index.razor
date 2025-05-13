@@ -367,13 +367,7 @@ else
 			await InvokeAsync(async () =>
 			{
 				searchTerm = newSearchTerm;
-				var parameters = new QueryParameters
-				{
-					SearchTerm = searchTerm,
-					SortBy = sortBy,
-					StatusFilters = statusFilters.Where(x => x.Value).Select(x => x.Key).ToArray(),
-					PriorityFilters = priorityFilters.Where(x => x.Value).Select(x => x.Key).ToArray()
-				};
+				var parameters = GetQueryParameters();
 				applications = await ApplicationService.GetApplicationsAsync(parameters);
 
 				isLoading = false;
@@ -395,15 +389,8 @@ else
 		if (sortBy != sortParameter)
 		{
 			sortBy = sortParameter;
-			var parameters = new QueryParameters
-			{
-				SearchTerm = searchTerm,
-				SortBy = sortBy,
-				StatusFilters = statusFilters.Where(x => x.Value).Select(x => x.Key).ToArray(),
-				PriorityFilters = priorityFilters.Where(x => x.Value).Select(x => x.Key).ToArray()
-			};
+			var parameters = GetQueryParameters();
 			applications = await ApplicationService.GetApplicationsAsync(parameters);
-
 		}		
 
 		isLoading = false;
@@ -430,13 +417,7 @@ else
 		isLoading = true;
 		StateHasChanged();
 
-		var parameters = new QueryParameters
-		{
-			SearchTerm = searchTerm,
-			SortBy = sortBy,
-			StatusFilters = statusFilters.Where(x => x.Value).Select(x => x.Key).ToArray(),
-			PriorityFilters = priorityFilters.Where(x => x.Value).Select(x => x.Key).ToArray()
-		};
+		var parameters = GetQueryParameters();
 		applications = await ApplicationService.GetApplicationsAsync(parameters);
 
 		isLoading = false;
@@ -446,5 +427,16 @@ else
 	private void ToggleView()
 	{
 		isGridView = !isGridView;
+	}
+
+	private QueryParameters GetQueryParameters()
+	{
+		return new QueryParameters
+			{
+				SearchTerm = searchTerm,
+				SortBy = sortBy,
+				PriorityFilters = priorityFilters.Where(x => x.Value).Select(x => x.Key).ToArray(),
+				StatusFilters = statusFilters.Where(x => x.Value).Select(x => x.Key).ToArray()
+			};
 	}
 }

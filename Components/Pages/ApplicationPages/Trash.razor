@@ -1,8 +1,11 @@
 ﻿@page "/applications/trash"
+@using System.Threading
 @inject ApplicationService ApplicationService
-@attribute [StreamRendering]
-@rendermode InteractiveServer
+@inject EnumService EnumService
 @inject NavigationManager NavigationManager
+@implements IDisposable
+@rendermode InteractiveServer
+@attribute [StreamRendering]
 
 <PageTitle>Deleted applications</PageTitle>
 
@@ -19,6 +22,106 @@
 }
 else
 {
+	<div class="my-4">
+		<div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4 gap-3">
+
+			<!-- Barre de filtre -->
+			<div class="d-flex flex-column flex-sm-row gap-3 w-100">
+				<div class="flex-fill position-relative">
+					<input type="text" class="form-control" @oninput="OnSearchInput" placeholder="Search by title, company or location..." />
+				</div>
+
+				<button class="btn btn-light border d-flex align-items-center" data-bs-auto-close="outside"
+				type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+					<i class="bi bi-funnel me-2"></i> Filters
+				</button>
+				<div class="dropdown-menu columns-2" aria-labelledby="filterDropdown"
+				style="font-size: 14px; max-width: 375px;">
+					<h6 class="dropdown-header">Status</h6>
+					<div class="row">
+						@if (statusList is not null)
+						{
+							@foreach (var status in statusList)
+							{
+								<div class="col-12 col-md-6">
+									<div class="form-check ms-3">
+										<input class="form-check-input" type="checkbox"
+										@bind="@statusFilters[status.Id]"
+										id="@status.Name">
+										<label class="form-check-label" for="@status.Name">@status.Name</label>
+									</div>
+								</div>
+							}
+						}
+					</div>
+					<h6 class="dropdown-header mt-2">Priority</h6>
+					<div class="row">
+						@if (priorityList is not null)
+						{
+							@foreach (var priority in priorityList)
+							{
+								<div class="col-12 col-md-6">
+									<div class="form-check ms-3">
+										<input class="form-check-input" type="checkbox"
+										@bind="@priorityFilters[priority.Id]"
+										id="@priority.Name">
+										<label class="form-check-label" for="@priority.Name">@priority.Name</label>
+									</div>
+								</div>
+							}
+						}
+					</div>
+					<div class="d-flex justify-content-between px-3 py-2">
+						<button class="btn btn-light border" @onclick="ClearAllFilters">
+							Clear all
+						</button>
+						<button class="btn btn-primary" @onclick="ApplyFilters">
+							Apply
+						</button>
+					</div>
+				</div>
+
+				<button class="btn border" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+					<i class="bi bi-sort-down"></i> Sort by
+				</button>
+				<ul class="dropdown-menu" aria-labelledby="sortDropdown" style="font-size: 14px;">
+					<li>
+						<a class="dropdown-item @(sortBy == "name-asc" ? "active" : "")" role="button" @onclick='() => OnSortingChanged("name-asc")'>
+							<i class="bi bi-sort-alpha-down"></i> Name (A-Z)
+						</a>
+					</li>
+					<li>
+						<a class="dropdown-item @(sortBy == "name-desc" ? "active" : "")" role="button" @onclick='() => OnSortingChanged("name-desc")'>
+							<i class="bi bi-sort-alpha-down-alt"></i> Name (Z-A)
+						</a>
+					</li>
+					<li>
+						<a class="dropdown-item @(sortBy == "date-asc" ? "active" : "")" role="button" @onclick='() => OnSortingChanged("date-asc")'>
+							<i class="bi bi-sort-numeric-down"></i> Application date (Older first)
+						</a>
+					</li>
+					<li>
+						<a class="dropdown-item @(sortBy == "date-desc" ? "active" : "")" role="button" @onclick='() => OnSortingChanged("date-desc")'>
+							<i class="bi bi-sort-numeric-down-alt"></i> Application date (Recent first)
+						</a>
+					</li>
+				</ul>
+			</div>
+
+			<!-- Boutons de disposition -->
+			<div class="d-flex align-items-center gap-2">
+				<button class="btn @(isGridView ? "btn-primary" : "btn-outline-secondary")"
+				@onclick="ToggleView">
+					<i class="bi bi-grid"></i>
+				</button>
+				<button class="btn @(!isGridView ? "btn-primary" : "btn-outline-secondary")"
+				@onclick="ToggleView">
+					<i class="bi bi-list"></i>
+				</button>
+			</div>
+		</div>
+	</div>
+
 	<div class="row g-4">
 		@foreach (var application in deletedApplications.Items)
 		{
@@ -51,15 +154,15 @@ else
 								<i class="bi bi-eye"></i>
 							</a>
 							<a role="button" class="btn btn-outline-success btn-sm"
-								data-bs-target="#restoreModal"
-								data-bs-toggle="modal" @onclick="() => DisplayRestoreModal(application)"
-								title="Restore">
+							data-bs-target="#restoreModal"
+							data-bs-toggle="modal" @onclick="() => DisplayRestoreModal(application)"
+							title="Restore">
 								<i class="bi bi-arrow-counterclockwise"></i>
 							</a>
 							<a role="button" class="btn btn-outline-danger btn-sm" 
-								data-bs-target="#deleteModal" 
-								data-bs-toggle="modal" @onclick="() => DisplayDeleteModal(application)"
-								title="Delete">
+							data-bs-target="#deleteModal" 
+							data-bs-toggle="modal" @onclick="() => DisplayDeleteModal(application)"
+							title="Delete">
 								<i class="bi bi-trash"></i>
 							</a>
 						</div>
@@ -71,9 +174,9 @@ else
 
 	<div class="d-flex justify-content-center mt-4">
 		<Pagination PageIndex="deletedApplications.PageIndex"
-					PageSize="deletedApplications.PageSize"
-					TotalItems="deletedApplications.TotalItems"
-					PageIndexChanged="OnPageChanged" />
+		PageSize="deletedApplications.PageSize"
+		TotalItems="deletedApplications.TotalItems"
+		PageIndexChanged="OnPageChanged" />
 	</div>
 }
 
@@ -120,24 +223,24 @@ else
 
 <style>
 	.card-title {
-		font-size: 18px;
-		color: #000;
-		text-decoration: none;
+	font-size: 18px;
+	color: #000;
+	text-decoration: none;
 	}
 
-		.card-title:hover {
-			text-decoration: underline;
-			color: var(--bs-primary);
-		}
+	.card-title:hover {
+	text-decoration: underline;
+	color: var(--bs-primary);
+	}
 
 	.text-muted {
-		color: #64748b !important;
+	color: #64748b !important;
 	}
 
 	.text-truncate {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 	}
 </style>
 
@@ -145,17 +248,31 @@ else
 @code {
 	PaginatedModel<ApplicationModel>? deletedApplications;
 	private ApplicationModel? selectedApplication;
+	private List<EnumItem>? statusList;
+	private List<EnumItem>? priorityList;
+
+	private Timer? searchTimer;
+	private bool isLoading = false;
+	private string? searchTerm;
+	private string? sortBy;
+	private Dictionary<int, bool> statusFilters = new();
+	private Dictionary<int, bool> priorityFilters = new();
+	private bool isGridView = true;
 
 	protected override async Task OnInitializedAsync()
 	{
 		deletedApplications = await ApplicationService.GetDeletedApplicationsAsync();
+		statusList = await EnumService.GetApplicationStatusesAsync();
+		priorityList = await EnumService.GetPrioritiesAsync();
+		statusFilters = statusList.ToDictionary(x => x.Id, x => false);
+		priorityFilters = statusList.ToDictionary(x => x.Id, x => false);
 	}
 
 	private void DisplayDeleteModal(ApplicationModel application)
 	{
 		selectedApplication = application;
 	}
-	
+
 	private void DisplayRestoreModal(ApplicationModel application)
 	{
 		selectedApplication = application;
@@ -174,7 +291,7 @@ else
 			selectedApplication = null;
 		}
 	}
-	
+
 	private async Task ConfirmRestoreAsync(int? id)
 	{
 		if (id.HasValue)
@@ -191,7 +308,95 @@ else
 
 	private async Task OnPageChanged(int pageIndex)
 	{
-		deletedApplications = await ApplicationService.GetDeletedApplicationsAsync(pageIndex);
+		deletedApplications = await ApplicationService.GetDeletedApplicationsAsync(new QueryParameters { PageIndex = pageIndex });
+	}
+
+	private void OnSearchInput(ChangeEventArgs e)
+	{
+		var newSearchTerm = e.Value?.ToString() ?? string.Empty;
+
+		searchTimer?.Dispose();
+
+		isLoading = true;
+		StateHasChanged();
+
+		searchTimer = new Timer(async _ =>
+		{
+			await InvokeAsync(async () =>
+			{
+				searchTerm = newSearchTerm;
+				var parameters = GetQueryParameters();
+				deletedApplications = await ApplicationService.GetDeletedApplicationsAsync(parameters);
+
+				isLoading = false;
+				StateHasChanged();
+			});
+		}, null, 500, Timeout.Infinite);
+	}
+
+	public void Dispose()
+	{
+		searchTimer?.Dispose();
+	}
+
+	private async Task ClearAllFilters()
+	{
+		foreach (var filter in statusFilters.Keys.ToList())
+		{
+			statusFilters[filter] = false;
+		}
+
+		foreach (var filter in priorityFilters.Keys.ToList())
+		{
+			priorityFilters[filter] = false;
+		}
+
+		await ApplyFilters();
+	}
+
+	private async Task ApplyFilters()
+	{
+		isLoading = true;
+		StateHasChanged();
+
+		var parameters = GetQueryParameters();
+		deletedApplications = await ApplicationService.GetDeletedApplicationsAsync(parameters);
+
+		isLoading = false;
+		StateHasChanged();
+	}
+
+	private async Task OnSortingChanged(string sortParameter)
+	{
+		isLoading = true;
+		StateHasChanged();
+
+		if (sortBy != sortParameter)
+		{
+			sortBy = sortParameter;
+			var parameters = GetQueryParameters();
+
+			deletedApplications = await ApplicationService.GetDeletedApplicationsAsync(parameters);
+		}
+
+		isLoading = false;
+		StateHasChanged();
+	}
+
+	private void ToggleView()
+	{
+		isGridView = !isGridView;
+	}
+
+	private QueryParameters GetQueryParameters()
+	{
+		return new QueryParameters
+		{
+			SearchTerm = searchTerm,
+			SortBy = sortBy,
+			PriorityFilters = priorityFilters.Where(x => x.Value).Select(x => x.Key).ToArray(),
+			StatusFilters = statusFilters.Where(x => x.Value).Select(x => x.Key).ToArray()
+		};
 	}
 }
 
