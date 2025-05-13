@@ -34,4 +34,5 @@ public class ApplicationModel
     public int InterestLevel { get; set; }
     public string? ContactName { get; set; }
     public string? ContactEmail { get; set; }
+    public bool IsDeleted { get; set; }
 }

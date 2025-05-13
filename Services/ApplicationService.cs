@@ -187,13 +187,33 @@ public class ApplicationService(HttpClient httpClient, FileHelpers fileHelpers)
         }
     }
 
-    public async Task DeleteApplicationAsync(int id)
+    public async Task SoftDeleteApplicationAsync(int id)
     {
         var response = await _httpClient.PatchAsync($"/api/applications/{id}/delete", null);
         if (!response.IsSuccessStatusCode)
         {
             var errorMessage = await GetErrorMessageAsync(response);
-            throw new Exception($"Error deleting application: {errorMessage}");
+            throw new Exception($"Error soft deleting application: {errorMessage}");
+        }
+    }
+
+    public async Task RestoreApplicationAsync(int id)
+    {
+        var response = await _httpClient.PatchAsync($"/api/applications/{id}/restore", null);
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorMessage = await GetErrorMessageAsync(response);
+            throw new Exception($"Error restoring application: {errorMessage}");
+        }
+    }
+
+    public async Task DeleteApplicationAsync(int id)
+    {
+        var response = await _httpClient.DeleteAsync($"/api/applications/{id}");
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorMessage = await GetErrorMessageAsync(response);
+            throw new Exception($"Error permanently deleting application: {errorMessage}");
         }
     }
 
@@ -221,7 +241,7 @@ public class ApplicationService(HttpClient httpClient, FileHelpers fileHelpers)
 public class QueryParameters
 {
     public int PageIndex { get; set; } = 1;
-    public int PageSize { get; set; } = 9;
+    public int PageSize { get; set; } = 6;
     public string? SearchTerm { get; set; }
     public string? SortBy { get; set; } = "date-desc";
     public int[]? StatusFilters { get; set; }

@@ -34,9 +34,12 @@ else
 						</div>
 						<div class="text-end">
 							<div>
-								<a class="btn btn-outline-secondary btn-sm" href="@($"/applications/edit/{application.Id}")">
-									<i class="bi bi-pencil-square"></i>
-								</a>
+								@if (!application.IsDeleted)
+								{									
+									<a class="btn btn-outline-secondary btn-sm me-2" href="@($"/applications/edit/{application.Id}")">
+										<i class="bi bi-pencil-square"></i>
+									</a>
+								}
 								<a class="btn btn-outline-danger btn-sm" role="button" data-bs-target="#deleteModal" data-bs-toggle="modal">
 									<i class="bi bi-trash"></i>
 								</a>
@@ -319,7 +322,7 @@ else
 	{
 		if (application != null)
 		{
-			await ApplicationService.DeleteApplicationAsync(application.Id);
+			await ApplicationService.SoftDeleteApplicationAsync(application.Id);
 			NavigationManager.NavigateTo("/applications");
 		}
 	}

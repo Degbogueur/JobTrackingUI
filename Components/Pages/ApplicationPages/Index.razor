@@ -263,9 +263,6 @@ else
 			</div>
 			<div class="modal-body">
 				Are you sure you want to delete the application for <strong>@selectedApplication?.JobTitle</strong> at <strong>@selectedApplication?.CompanyName</strong>?<br />
-				<p class="mt-2 mb-0">
-					<i class="bi bi-exclamation-circle text-danger"></i>This action cannot be undone.
-				</p>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -341,7 +338,7 @@ else
 	{
 		if (id.HasValue)
 		{
-			await ApplicationService.DeleteApplicationAsync(id.Value);
+			await ApplicationService.SoftDeleteApplicationAsync(id.Value);
 
 			applications = await ApplicationService.GetApplicationsAsync();
 		}
