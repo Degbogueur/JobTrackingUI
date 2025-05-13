@@ -308,7 +308,9 @@ else
 
 	private async Task OnPageChanged(int pageIndex)
 	{
-		deletedApplications = await ApplicationService.GetDeletedApplicationsAsync(new QueryParameters { PageIndex = pageIndex });
+		var parameters = GetQueryParameters();
+		parameters.PageIndex = pageIndex;
+		deletedApplications = await ApplicationService.GetDeletedApplicationsAsync(parameters);
 	}
 
 	private void OnSearchInput(ChangeEventArgs e)

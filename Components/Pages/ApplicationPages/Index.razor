@@ -279,7 +279,7 @@ else
 	}
 
 	.card-title {
-		font-size: 18px;
+	font-size: 18px;
 	}
 
 	.card-title:hover, a.job-title:hover {
@@ -298,11 +298,11 @@ else
 	}
 
 	.vertical-align-middle {
-		vertical-align: middle;
+	vertical-align: middle;
 	}
 
 	.fixed-height tr {
-		height: 60px;
+	height: 60px;
 	}
 </style>
 
@@ -350,7 +350,9 @@ else
 
 	private async Task OnPageChanged(int pageIndex)
 	{
-		applications = await ApplicationService.GetApplicationsAsync(new QueryParameters { PageIndex = pageIndex });
+		var parameters = GetQueryParameters();
+		parameters.PageIndex = pageIndex;
+		applications = await ApplicationService.GetApplicationsAsync(parameters);
 	}
 
 	private void OnSearchInput(ChangeEventArgs e)
