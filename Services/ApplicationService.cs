@@ -171,6 +171,20 @@ public class ApplicationService(HttpClient httpClient, FileHelpers fileHelpers)
         }
     }
 
+    public async Task UpdateApplicationStatusAsync(int id, UpdateApplicationStatusModel model)
+    {
+        var json = JsonConvert.SerializeObject(model);
+        var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+        var response = await _httpClient.PatchAsync($"/api/applications/{id}/update-status", content);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorMessage = await GetErrorMessageAsync(response);
+            throw new Exception($"Error updating application status: {errorMessage}");
+        }
+    }
+
     public async Task SoftDeleteApplicationAsync(int id)
     {
         var response = await _httpClient.PatchAsync($"/api/applications/{id}/delete", null);

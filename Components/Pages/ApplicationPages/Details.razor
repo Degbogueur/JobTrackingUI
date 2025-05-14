@@ -1,19 +1,20 @@
 ﻿@page "/applications/{id:int}"
 @inject ApplicationService ApplicationService
 @inject NavigationManager NavigationManager
+@inject EnumService EnumService
 @attribute [StreamRendering]
 @rendermode InteractiveServer
 
 <PageTitle>@Title</PageTitle>
 
-@if (Id is null || application is null)
+@if (Id is null || Application is null || actions is null || statuses is null)
 {
 	<Spinner />
 }
 else
 {
 	<div class="d-flex justify-content-between mb-4">
-		<h1 class="fw-bold fs-2 mb-0">@application.JobTitle</h1>
+		<h1 class="fw-bold fs-2 mb-0">@Application.JobTitle</h1>
 		<a href="/applications" class="btn btn-primary">
 			<i class="bi bi-arrow-left"></i> Back to applications
 		</a>
@@ -25,67 +26,70 @@ else
 					<div class="d-flex justify-content-between align-items-center mb-4">
 						<div class="">
 							<h4 class="card-title fw-medium">
-								@application.CompanyName
+								@Application.CompanyName
 							</h4>
 							<p class="text-muted fs-6 mb-0">
 								<i class="bi bi-geo-alt"></i>
-								@application.Location
+								@Application.Location
 							</p>
 						</div>
 						<div class="text-end">
 							<div>
-								@if (!application.IsDeleted)
-								{									
-									<a class="btn btn-outline-secondary btn-sm me-2" href="@($"/applications/edit/{application.Id}")">
-										<i class="bi bi-pencil-square"></i>
+								@if (!Application.IsDeleted)
+								{
+									<a class="btn btn-outline-success btn-sm me-2" role="button" data-bs-target="#updateStatusModal" data-bs-toggle="modal">
+										<i class="bi bi-ui-checks"></i> Status update
+									</a>
+									<a class="btn btn-outline-secondary btn-sm me-2" href="@($"/applications/edit/{Application.Id}")">
+										<i class="bi bi-pencil-square"></i> Edit
 									</a>
 								}
 								<a class="btn btn-outline-danger btn-sm" role="button" data-bs-target="#deleteModal" data-bs-toggle="modal">
-									<i class="bi bi-trash"></i>
+									<i class="bi bi-trash"></i> Delete
 								</a>
 							</div>
 							<span class="badge bg-primary fw-medium rounded-pill">
-								@application.Status
+								@Application.Status
 							</span>
 
 						</div>
 					</div>
 					<h5 class="fw-medium">Job description</h5>
-					<p class="card-text text-small mb-4">@application.JobDescription</p>
+					<p class="card-text text-small mb-4">@Application.JobDescription</p>
 
 					<div class="row row-cols-1 row-cols-sm-2 g-3">
 						<div class="col">
 							<p class="tiny-label fw-medium">Contract type</p>
 							<p class="mb-0 fs-6 fw-medium">
 								<i class="bi bi-file-earmark-text"></i>
-								@application.ContractType
+								@Application.ContractType
 							</p>
 						</div>
 						<div class="col">
 							<p class="tiny-label fw-medium">Source</p>
 							<p class="mb-0 fs-6 fw-medium">
 								<i class="bi bi-globe2"></i>
-								@application.Source
+								@Application.Source
 							</p>
 						</div>
 						<div class="col">
 							<p class="tiny-label fw-medium">Key words</p>
 							<p class="mb-0 fs-6 fw-medium">
 								<i class="bi bi-tags"></i>
-								@(application.KeyWords ?? "No key words submitted")
+								@(Application.KeyWords ?? "No key words submitted")
 							</p>
 						</div>
 						<div class="col">
 							<p class="tiny-label fw-medium">Priority</p>
 							<p class="mb-0 fs-6 fw-medium">
 								<i class="bi bi-exclamation-circle"></i>
-								@application.Priority
+								@Application.Priority
 							</p>
 						</div>
 						<div class="col">
 							<p class="tiny-label fw-medium">Interest level</p>
 							<p class="mb-0 fs-6 fw-medium">
-								<Rating CurrentRating="@application.InterestLevel"
+								<Rating CurrentRating="@Application.InterestLevel"
 								IsReadOnly="true"
 								SizeClass="rating-sm" />
 							</p>
@@ -93,27 +97,27 @@ else
 						<div class="col">
 							<p class="tiny-label fw-medium">Offer URL</p>
 							<p class="mb-0 fs-6 fw-medium">
-								<a href="@application.OfferUrl" target="_blank" class="text-decoration-none">
+								<a href="@Application.OfferUrl" target="_blank" class="text-decoration-none">
 									Show offer
 									<i class="bi bi-box-arrow-up-right"></i>
 								</a>
 							</p>
 						</div>
-						@if (application.MinSalaryProposed.HasValue && application.MaxSalaryProposed.HasValue)
+						@if (Application.MinSalaryProposed.HasValue && Application.MaxSalaryProposed.HasValue)
 						{
 							<div class="col">
 								<p class="tiny-label fw-medium">Proposed salary</p>
 								<p class="mb-0 fs-6 fw-medium">
-									@($"{application.MinSalaryProposed:#,0.00} - {application.MaxSalaryProposed:#,0.00} {application.Currency}")
+									@($"{Application.MinSalaryProposed:#,0.00} - {Application.MaxSalaryProposed:#,0.00} {Application.Currency}")
 								</p>
 							</div>
 						}
-						@if (application.MinSalaryOffered.HasValue && application.MaxSalaryOffered.HasValue)
+						@if (Application.MinSalaryOffered.HasValue && Application.MaxSalaryOffered.HasValue)
 						{
 							<div class="col">
 								<p class="tiny-label fw-medium">Offered salary</p>
 								<p class="mb-0 fs-6 fw-medium">
-									@($"{application.MinSalaryOffered:#,0.00} - {application.MaxSalaryOffered:#,0.00} {application.Currency}")
+									@($"{Application.MinSalaryOffered:#,0.00} - {Application.MaxSalaryOffered:#,0.00} {Application.Currency}")
 								</p>
 							</div>
 						}
@@ -121,7 +125,7 @@ else
 					<div class="col mt-3">
 						<p class="tiny-label fw-medium">Notes</p>
 						<p class="mb-0 fs-6 fw-medium">
-							@(application.Notes ?? "No notes submitted")
+							@(Application.Notes ?? "No notes submitted")
 						</p>
 					</div>
 				</div>
@@ -139,26 +143,26 @@ else
 							<p class="tiny-label">Application date</p>
 							<p class="mb-0">
 								<i class="bi bi-calendar4 me-1"></i>
-								@application.ApplicationDate.ToString("dd MMM yyyy")
+								@Application.ApplicationDate.ToString("dd MMM yyyy")
 							</p>
 						</div>
-						@if (application.PostingDate.HasValue)
+						@if (Application.PostingDate.HasValue)
 						{
 							<div class="mb-2">
 								<p class="tiny-label">Posting date</p>
 								<p class="mb-0">
 									<i class="bi bi-calendar4 me-1"></i>
-									@application.PostingDate?.ToString("dd MMM yyyy")
+									@Application.PostingDate?.ToString("dd MMM yyyy")
 								</p>
 							</div>
 						}
-						@if (application.ClosingDate.HasValue)
+						@if (Application.ClosingDate.HasValue)
 						{
 							<div class="mb-2">
 								<p class="tiny-label">Closing date</p>
 								<p class="mb-0">
 									<i class="bi bi-calendar4 me-1"></i>
-									@application.ClosingDate?.ToString("dd MMM yyyy")
+									@Application.ClosingDate?.ToString("dd MMM yyyy")
 								</p>
 							</div>
 						}
@@ -178,10 +182,10 @@ else
 							<p class="tiny-label">Last action</p>
 							<p class="mb-0">
 								<span class="fw-medium">
-									@application.LastAction
+									@Application.LastAction
 								</span>
 								<span class="tiny-label fw-medium">
-									(@application.LastActionDate.ToString("dd MMM yyyy"))
+									(@Application.LastActionDate.ToString("dd MMM yyyy"))
 								</span>
 							</p>
 						</div>
@@ -189,12 +193,12 @@ else
 							<p class="tiny-label">Next action</p>
 							<p class="mb-0">
 								<span class="fw-medium">
-									@application.NextAction
+									@Application.NextAction
 								</span>
-								@if (application.NextActionDate.HasValue)
+								@if (Application.NextActionDate.HasValue)
 								{
 									<span class="tiny-label fw-medium">
-										(@application.NextActionDate?.ToString("dd MMM yyyy"))
+										(@Application.NextActionDate?.ToString("dd MMM yyyy"))
 									</span>
 								}								
 							</p>
@@ -213,19 +217,19 @@ else
 					<div class="card-text fs-6">
 						<p class="mb-2">
 							<i class="bi bi-file-earmark-person"></i>
-							<a href="@application.ResumeFilePath" target="_blank" class="text-decoration-none fw-medium">
+							<a href="@Application.ResumeFilePath" target="_blank" class="text-decoration-none fw-medium">
 								Resume
 							</a>
-							<span class="text-muted small">(@application.ResumeFileName)</span>
+							<span class="text-muted small">(@Application.ResumeFileName)</span>
 						</p>
-						@if (!string.IsNullOrWhiteSpace(application.CoverLetterFilePath))
+						@if (!string.IsNullOrWhiteSpace(Application.CoverLetterFilePath))
 						{
 							<p class="mb-2">
 								<i class="bi bi-file-earmark-text-fill"></i>
-								<a href="@application.CoverLetterFilePath" target="_blank" class="text-decoration-none fw-medium">
+								<a href="@Application.CoverLetterFilePath" target="_blank" class="text-decoration-none fw-medium">
 									Cover Letter
 								</a>
-								<span class="text-muted small">(@application.CoverLetterFileName)</span>
+								<span class="text-muted small">(@Application.CoverLetterFileName)</span>
 							</p>
 						}
 					</div>
@@ -234,7 +238,7 @@ else
 			<!-- Files card -->
 
 			<!-- Contact card -->
-			@if (!string.IsNullOrWhiteSpace(application.ContactName))
+			@if (!string.IsNullOrWhiteSpace(Application.ContactName))
 			{
 				<div class="card shadow-sm mb-4">
 					<div class="card-body px-4">
@@ -244,14 +248,14 @@ else
 						<div class="card-text fs-6">
 							<p class="mb-2">
 								<i class="bi bi-person"></i>
-								@application.ContactName
+								@Application.ContactName
 							</p>
-							@if (!string.IsNullOrWhiteSpace(application.ContactEmail))
+							@if (!string.IsNullOrWhiteSpace(Application.ContactEmail))
 							{
 								<p class="mb-2">
 									<i class="bi bi-envelope-at"></i>
-									<a href="mailto:@application.ContactEmail" class="text-decoration-none">
-										@application.ContactEmail
+									<a href="mailto:@Application.ContactEmail" class="text-decoration-none">
+										@Application.ContactEmail
 									</a>
 								</p>
 							}						
@@ -261,29 +265,90 @@ else
 			}
 			<!-- Contact card -->
 		</div>
-	</div>	
-}
+	</div>
 
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-	<div class="modal-dialog modal-dialog-centered">
-		<div class="modal-content">
-			<div class="modal-header bg-danger text-white">
-				<h1 class="modal-title fs-5" id="deleteModalLabel">Delete confirmation</h1>
-				<button type="button" class="btn-close bg-white" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
-			<div class="modal-body">
-				Are you sure you want to delete the application for <strong>@application?.JobTitle</strong> at <strong>@application?.CompanyName</strong>?<br />
-				<p class="mt-2 mb-0">
-					<i class="bi bi-exclamation-circle text-danger"></i>This action cannot be undone.
-				</p>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-				<button type="button" class="btn btn-danger" @onclick="ConfirmDeleteAsync" data-bs-dismiss="modal">Delete</button>
+	<!-- Delete modal -->
+	<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header bg-danger text-white">
+					<h1 class="modal-title fs-5" id="deleteModalLabel">Delete confirmation</h1>
+					<button type="button" class="btn-close bg-white" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					Are you sure you want to delete the application for <strong>@Application?.JobTitle</strong> at <strong>@Application?.CompanyName</strong>?<br />
+					<p class="mt-2 mb-0">
+						<i class="bi bi-exclamation-circle text-danger"></i>This action cannot be undone.
+					</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+					<button type="button" class="btn btn-danger" @onclick="ConfirmDeleteAsync" data-bs-dismiss="modal">Delete</button>
+				</div>
 			</div>
 		</div>
 	</div>
-</div>
+
+	<!-- Update status modal -->
+	<div class="modal fade" id="updateStatusModal" tabindex="-1" aria-labelledby="updateStatusModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header bg-success text-white">
+					<h1 class="modal-title fs-5" id="updateStatusModalLabel">Update application status</h1>
+					<button type="button" class="btn-close bg-white" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<EditForm Model="ApplicationStatus" FormName="updateStatus" OnValidSubmit="HandleUpdateStatusSubmitAsync" Enhance>
+					<div class="modal-body">
+						<div class="form-group mb-3">
+							<label class="form-label required">Status</label>
+							<InputSelect id="status" class="form-select" @bind-Value="ApplicationStatus.Status">
+								<optgroup label="Select application status">
+									@foreach (var status in statuses)
+									{
+										<option value="@status.Id">@status.Name</option>
+									}
+								</optgroup>
+							</InputSelect>
+						</div>
+						@if (ApplicationStatus.Status == rejectedStatusId)
+						{
+							<div class="form-group mb-3">
+								<label class="form-label required">Rejection reason</label>
+								<InputSelect id="rejectionReason" class="form-select" @bind-Value="ApplicationStatus.RejectionReason">
+									<optgroup label="Select rejection reason">
+										@foreach (var rejectionReason in rejectionReasons)
+										{
+											<option value="@rejectionReason.Id">@rejectionReason.Name</option>
+										}
+									</optgroup>
+								</InputSelect>
+							</div>
+						}
+						<div class="form-group mb-3">
+							<label class="form-label required">Next action</label>
+							<InputSelect id="nextAction" class="form-select" @bind-Value="ApplicationStatus.NextAction">
+								<optgroup label="Select next action">
+									@foreach (var action in actions)
+									{
+										<option value="@action.Id">@action.Name</option>
+									}
+								</optgroup>
+							</InputSelect>
+						</div>
+						<div class="form-group mb-3">
+							<label class="form-label">Next action date</label>
+							<InputDate id="nextActionDate" class="form-control" @bind-Value="ApplicationStatus.NextActionDate"></InputDate>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+						<button type="submit" class="btn btn-success" data-bs-dismiss="modal">Update</button>
+					</div>
+				</EditForm>				
+			</div>
+		</div>
+	</div>
+}
 
 <style>
 	.tiny-label {
@@ -303,14 +368,38 @@ else
 
 	private string Title { get; set; } = "Application Details";
 
-	private ApplicationModel? application;
+	private ApplicationModel? Application;
+	private List<EnumItem>? actions;
+	private List<EnumItem>? statuses;
+	private List<EnumItem>? rejectionReasons;
+	private UpdateApplicationStatusModel? ApplicationStatus;
+	private int? rejectedStatusId;
+
+	protected override async Task OnInitializedAsync()
+	{
+		actions = await EnumService.GetActionTypesAsync();
+		statuses = await EnumService.GetApplicationStatusesAsync();
+		rejectionReasons = await EnumService.GetRejectionReasonsAsync();
+		rejectedStatusId = statuses.Where(s => s.Name == "Rejected").Select(s => s.Id).FirstOrDefault();
+	}
 
 	protected override async Task OnParametersSetAsync()
 	{
 		if (Id.HasValue)
 		{
-			application = await ApplicationService.GetApplicationByIdAsync(Id.Value);
-			Title = $"{application?.JobTitle} - Application Details";
+			Application = await ApplicationService.GetApplicationByIdAsync(Id.Value);
+			Title = $"{Application?.JobTitle} - Application Details";
+			if (Application is not null &&
+				statuses is not null &&
+				actions is not null)
+			{
+				ApplicationStatus = new UpdateApplicationStatusModel
+				{
+					Status = statuses.Where(s => s.Name == Application.Status).Select(s => s.Id).FirstOrDefault(),
+					NextAction = actions.Where(s => s.Name == Application.NextAction).Select(s => s.Id).FirstOrDefault(),
+					NextActionDate = Application.NextActionDate
+				};
+			}
 		}
 		else
 		{
@@ -320,10 +409,22 @@ else
 
 	private async Task ConfirmDeleteAsync()
 	{
-		if (application != null)
+		if (Application != null)
 		{
-			await ApplicationService.SoftDeleteApplicationAsync(application.Id);
+			await ApplicationService.SoftDeleteApplicationAsync(Application.Id);
 			NavigationManager.NavigateTo("/applications");
 		}
+	}
+
+	private async Task HandleUpdateStatusSubmitAsync()
+	{
+		ArgumentNullException.ThrowIfNull(Application);
+		ArgumentNullException.ThrowIfNull(ApplicationStatus);
+
+		await ApplicationService.UpdateApplicationStatusAsync(Application.Id, ApplicationStatus);
+
+		Application = await ApplicationService.GetApplicationByIdAsync(Application.Id);
+
+		StateHasChanged();
 	}
 }
