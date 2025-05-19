@@ -26,6 +26,15 @@ public class ApplicationService(HttpClient httpClient, FileHelpers fileHelpers)
         return applications ?? new PaginatedModel<ApplicationModel>();
     }
 
+    public async Task<DashboardModel> GetDashboardAsync()
+    {
+        var response = await _httpClient.GetAsync("/api/applications/dashboard");
+        response.EnsureSuccessStatusCode();
+        var content = await response.Content.ReadAsStringAsync();
+        var dashboard = JsonConvert.DeserializeObject<DashboardModel>(content);
+        return dashboard ?? new DashboardModel();
+    }
+
     public async Task<PaginatedModel<ApplicationModel>> GetDeletedApplicationsAsync(
         QueryParameters? parameters = null)
     {
