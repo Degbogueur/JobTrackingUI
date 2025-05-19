@@ -1,6 +1,7 @@
 using JobTrackingUI.Components;
 using JobTrackingUI.Helpers;
 using JobTrackingUI.Services;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +19,8 @@ builder.Services.AddHttpClient<EnumService>(
     client => client.BaseAddress = new Uri(webApiBaseUrl));
 
 builder.Services.AddScoped<FileHelpers>();
+
+builder.Services.AddMudServices();
 
 var app = builder.Build();
 
