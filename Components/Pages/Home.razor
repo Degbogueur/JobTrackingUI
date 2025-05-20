@@ -48,7 +48,7 @@ else
 {
     <div class="row g-4">
         <!-- KPI Cards -->
-        <div class="col-md-3 col-sm-6">
+        <div class="col-lg-3 col-md-6 col-sm-12">
             <div class="card shadow-sm">
                 <div class="card-body">
                     <div class="d-flex mb-3 justify-content-between align-items-center border-bottom fw-medium text-primary">
@@ -59,7 +59,7 @@ else
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6">
+        <div class="col-lg-3 col-md-6 col-sm-12">
             <div class="card shadow-sm">
                 <div class="card-body">
                     <div class="d-flex mb-3 justify-content-between align-items-center border-bottom fw-medium text-success">
@@ -70,7 +70,7 @@ else
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6">
+        <div class="col-lg-3 col-md-6 col-sm-12">
             <div class="card shadow-sm">
                 <div class="card-body">
                     <div class="d-flex mb-3 justify-content-between align-items-center border-bottom fw-medium text-danger">
@@ -81,7 +81,7 @@ else
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6">
+        <div class="col-lg-3 col-md-6 col-sm-12">
             <div class="card shadow-sm">
                 <div class="card-body">
                     <div class="d-flex mb-3 justify-content-between align-items-center border-bottom fw-medium text-secondary">
@@ -97,10 +97,11 @@ else
         <!-- Status Distribution -->
         <div class="col-md-4 col-sm-12">
             <MudPaper Elevation="2" Class="p-4 h-100">
+                <h5 class="mb-5">Application status</h5>
                 <MudChart ChartType="ChartType.Donut"
-                          LegendPosition="@Position.Bottom"
-                          InputData="@statusData"
-                          InputLabels="@statusLabels">
+                LegendPosition="@Position.Bottom"
+                InputData="@statusData"
+                InputLabels="@statusLabels">
                 </MudChart>
             </MudPaper>
         </div>
@@ -109,14 +110,198 @@ else
         <!-- Monthly Distribution -->
         <div class="col-md-8 col-sm-12">
             <MudPaper Elevation="2" Class="p-4">
+                <h5 class="mb-5">Monthly activity</h5>
                 <MudChart ChartType="ChartType.Bar"
-                          ChartSeries="@monthlyDistributionSeries"
-                          XAxisLabels="@monthlyDistributionLabels"
-                          Width="100%">
+                ChartSeries="@monthlyDistributionSeries"
+                XAxisLabels="@monthlyDistributionLabels"
+                Width="100%">
                 </MudChart>
             </MudPaper>
         </div>
         <!-- Monthly Distribution -->
+
+        <!-- Source Distribution -->
+        <div class="col-lg-4 col-md-6 col-sm-12">
+            <MudPaper Elevation="2" Class="p-4 h-100">
+                <h5 class="mb-5">Application sources</h5>
+                <MudChart ChartType="ChartType.Pie"
+                LegendPosition="@Position.Bottom"
+                InputData="@sourceData"
+                InputLabels="@sourceLabels">
+                </MudChart>
+            </MudPaper>
+        </div>
+        <!-- Source Distribution -->
+
+        <!-- Contract type Distribution -->
+        <div class="col-lg-4 col-md-6 col-sm-12">
+            <MudPaper Elevation="2" Class="p-4 h-100">
+                <h5 class="mb-5">Application contract types</h5>
+                <MudChart ChartType="ChartType.Donut"
+                LegendPosition="@Position.Bottom"
+                InputData="@contractTypeData"
+                InputLabels="@contractTypeLabels">
+                </MudChart>
+            </MudPaper>
+        </div>
+        <!-- Contract type Distribution -->
+
+        <!-- Priority Distribution -->
+        <div class="col-lg-4 col-md-6 col-sm-12">
+            <MudPaper Elevation="2" Class="p-4 h-100">
+                <h5 class="mb-5">Application priority distribution</h5>
+                @if (Dashboard.TotalApplications > 0)
+                {
+                    <MudGrid Spacing="2">
+                        @foreach (var priority in priorityDistribution)
+                        {
+                            <MudItem md="12" sm="12" xs="12">
+                                <MudText Typo="Typo.body2">@priority.Key: @priority.Value</MudText>
+                                <MudProgressLinear Color="@GetPriorityColor(priority.Key)"
+                                Value="@((priority.Value * 100.0) / Dashboard.TotalApplications)"
+                                Size="Size.Medium"
+                                Class="my-2" />
+                            </MudItem>
+                        }
+                    </MudGrid>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2">No applications available.</MudText>
+                }
+            </MudPaper>
+        </div>
+        <!-- Priority Distribution -->
+
+        <!-- Top Companies -->
+        <div class="col-lg-4 col-md-6 col-sm-12">
+            <MudPaper Elevation="2" Class="p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-5">
+                    <h5 class="mb-0">Top Companies</h5>
+                    <i class="bi bi-globe2 fs-5"></i>
+                </div>
+                @if (topEnterprises.Count != 0)
+                {
+                    foreach (var item in topEnterprises)
+                    {
+                        <dl class="row">
+                            <dt class="col-6 text-start">@item.Key</dt>
+                            <dd class="col-6 text-end">@item.Value applications</dd>
+                        </dl>
+                    }
+                }
+                else
+                {
+                    <div class="text-muted d-flex justify-content-center align-items-center h-100">
+                        No application submitted
+                    </div>
+                }
+            </MudPaper>
+        </div>
+        <!-- Top Companies -->
+
+        <!-- Top Locations -->
+        <div class="col-lg-4 col-md-6 col-sm-12">
+            <MudPaper Elevation="2" Class="p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-5">
+                    <h5 class="mb-0">Top Locations</h5>
+                    <i class="bi bi-geo-alt fs-5"></i>
+                </div>
+                @if (topLocations.Count != 0)
+                {                    
+                    foreach (var item in topLocations)
+                    {
+                        <dl class="row">
+                            <dt class="col-6 text-start">@item.Key</dt>
+                            <dd class="col-6 text-end">@item.Value applications</dd>
+                        </dl>
+                    }
+                }
+                else
+                {
+                    <div class="text-muted d-flex justify-content-center align-items-center h-100">
+                        No application submitted
+                    </div>
+                }
+            </MudPaper>
+        </div>
+        <!-- Top Locations -->
+
+        <!-- Upcoming Actions -->
+        <div class="col-lg-4 col-md-6 col-sm-12">
+            <MudPaper Elevation="2" Class="p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-5">
+                    <h5 class="mb-0">Upcoming Actions</h5>
+                    <i class="bi bi-calendar2 fs-5"></i>
+                </div>
+                @if (upcomingActions.Count != 0)
+                {
+                    foreach (var item in upcomingActions)
+                    {
+                        <dl class="row">
+                            <dt class="col-6 text-start">@item.Key</dt>
+                            <dd class="col-6 text-end">@item.Value.ToShortDateString()</dd>
+                        </dl>
+                    }
+                }
+                else
+                {
+                    <div class="text-muted d-flex justify-content-center align-items-center h-100">
+                        No upcoming action planified
+                    </div>
+                }
+            </MudPaper>
+        </div>
+        <!-- Upcoming Actions -->
+
+        <!-- Recent Applications -->
+        <div class="col-12">
+            <MudPaper Elevation="2" Class="p-4">
+                <div class="d-flex justify-content-between align-items-center mb-5">
+                    <h5 class="mb-0">Recent Applications</h5>
+                    <a href="/applications" class="btn">
+                        View all <i class="bi bi-arrow-right-short"></i>
+                    </a>
+                </div>                
+                @if (RecentApplications.Count != 0)
+                {
+                    <table class="table table-hover" style="vertical-align: middle;">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Company Name</th>
+                                <th>Job Title</th>
+                                <th>Application Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var application in RecentApplications)
+                            {
+                                <tr>
+                                    <td>@application.CompanyName</td>
+                                    <td>@application.JobTitle</td>
+                                    <td>@application.ApplicationDateTime.ToString("MMM dd, yyyy")</td>
+                                    <td><span class="badge bg-primary fw-medium rounded-pill">@application.Status</span></td>
+                                    <td>
+                                        <a href="@($"/applications/{application.Id}")" class="btn btn-sm">
+                                            Details
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <div class="text-muted d-flex justify-content-center align-items-center h-100">
+                        No application submitted
+                    </div>
+                }
+            </MudPaper>
+        </div>
+        <!-- Recent Applications -->
     </div>
 }
 
@@ -131,14 +316,45 @@ else
     public List<ChartSeries> monthlyDistributionSeries = [];
     public string[] monthlyDistributionLabels = { };
 
+    public double[] sourceData = { };
+    public string[] sourceLabels = { };
+
+    public double[] contractTypeData = { };
+    public string[] contractTypeLabels = { };
+
+    private Dictionary<string, int> priorityDistribution = new();
+
+    private Dictionary<string, int> topEnterprises = new();
+
+    private Dictionary<string, int> topLocations = new();
+
+    private Dictionary<string, DateTime> upcomingActions = new();
+
+    private List<RecentApplication> RecentApplications = new();
+
     private DashboardModel? Dashboard;
 
     protected override async Task OnInitializedAsync()
     {
         Dashboard = await ApplicationService.GetDashboardAsync();
 
+        if (Dashboard != null)
+        {
+            LoadCharts();
+        }
+    }
+
+    private void LoadCharts()
+    {
         LoadStatusDistribution();
         LoadMonthlyDistribution();
+        LoadSourceDistribution();
+        LoadContractTypeDistribution();
+        LoadPriorityDistribution();
+        LoadTopEnterprises();
+        LoadTopLocations();
+        LoadUpcomingActions();
+        LoadRecentApplications();
     }
 
     private void LoadStatusDistribution()
@@ -159,6 +375,60 @@ else
                 Name = "Applications",
                 Data = monthlyDistribution.Select(m => (double)m.Value).ToArray()
             }
+        };
+    }
+
+    private void LoadSourceDistribution()
+    {
+        var sourceDistribution = Dashboard!.SourceDistribution;
+        sourceLabels = sourceDistribution.Select(s => s.Key).ToArray();
+        sourceData = sourceDistribution.Select(s => (double)s.Value).ToArray();
+    }
+
+    private void LoadContractTypeDistribution()
+    {
+        var contractTypeDistribution = Dashboard!.ContractTypeDistribution;
+        contractTypeLabels = contractTypeDistribution.Select(c => c.Key).ToArray();
+        contractTypeData = contractTypeDistribution.Select(c => (double)c.Value).ToArray();
+    }
+
+    private void LoadPriorityDistribution()
+    {        
+        priorityDistribution = Dashboard!.PriorityDistribution;
+    }
+
+    private void LoadTopEnterprises()
+    {
+        topEnterprises = Dashboard!.TopEnterprises;
+    }
+
+    private void LoadTopLocations()
+    {
+        topLocations = Dashboard!.TopLocations;
+    }
+
+    private void LoadUpcomingActions()
+    {
+        upcomingActions = Dashboard!.UpcomingActions;
+    }
+
+    private void LoadRecentApplications()
+    {
+        RecentApplications = Dashboard!.RecentApplications;
+    }
+
+
+
+
+    private Color GetPriorityColor(string priority)
+    {
+        return priority switch
+        {
+            "Low" => Color.Success,      // Green
+            "Medium" => Color.Info, // Orange
+            "High" => Color.Warning,      // Orange
+            "Critical" => Color.Error, // Red
+            _ => Color.Default
         };
     }
 }
