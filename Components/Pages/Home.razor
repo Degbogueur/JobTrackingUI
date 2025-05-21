@@ -6,10 +6,12 @@
 
 <PageTitle>Dashboard</PageTitle>
 
-<div class="d-flex justify-content-between mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="fw-bold fs-2 mb-0">Dashboard</h1>
-    @* <div class="w-auto">
-        <InputSelect class="form-select" @bind-Value="selectedPeriod">
+    <div class="w-auto">
+        <InputSelect class="form-select" ValueExpression="@(() => selectedPeriod)"
+                                         Value="selectedPeriod"
+                                         ValueChanged="@((string value) => OnPeriodChanged(value))">
             <optgroup label="Recent periods">
                 <option value="last7Days">Last 7 days</option>
                 <option value="last30Days">Last 30 days</option>
@@ -30,14 +32,12 @@
         </InputSelect>
         @if (selectedPeriod == "custom")
         {
-            <div class="mt-2">
-                <InputDate @bind-Value="startDate" Label="Start Date" class="form-control-sm" />
-                <InputDate @bind-Value="endDate" Label="End Date" class="form-control-sm" />
-            </div>
+            <MudStack Class="mt-3">
+                <MudDateRangePicker DateRange="@_dateRange" Margin="Margin.Dense" PickerVariant="PickerVariant.Dialog"
+                PlaceholderStart="Start Date" PlaceholderEnd="End Date" DateRangeChanged="OnDateRangeChanged" />
+            </MudStack>
         }
-    </div> *@
-
-
+    </div>
 </div>
 
 @if (Dashboard is null)
@@ -112,9 +112,10 @@ else
             <MudPaper Elevation="2" Class="p-4">
                 <h5 class="mb-5">Monthly activity</h5>
                 <MudChart ChartType="ChartType.Bar"
-                ChartSeries="@monthlyDistributionSeries"
-                XAxisLabels="@monthlyDistributionLabels"
-                Width="100%">
+                          ChartSeries="@monthlyDistributionSeries"
+                          XAxisLabels="@monthlyDistributionLabels"
+                          AxisChartOptions="new AxisChartOptions { MatchBoundsToSize = true }"
+                          Width="100%">
                 </MudChart>
             </MudPaper>
         </div>
@@ -307,8 +308,11 @@ else
 
 @code {
     private string selectedPeriod = "thisMonth";
-    private DateTime? startDate;
-    private DateTime? endDate;
+    private DateRange? _dateRange = new DateRange(
+        new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1),
+        new DateTime(DateTime.Today.Year, DateTime.Today.Month, DateTime.DaysInMonth(DateTime.Today.Year, DateTime.Today.Month))
+    )
+    ;
 
     public double[] statusData = { };
     public string[] statusLabels = { };
@@ -336,12 +340,128 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        Dashboard = await ApplicationService.GetDashboardAsync();
+        await LoadDashboardAsync();
+    }
+
+    private async Task OnPeriodChanged(string value)
+    {
+        selectedPeriod = value;
+        UpdateDateRange();
+        await LoadDashboardAsync();
+    }
+
+    private async Task OnDateRangeChanged(DateRange dateRange)
+    {
+        _dateRange = dateRange;
+        selectedPeriod = "custom";
+        await LoadDashboardAsync();
+    }
+
+    private void UpdateDateRange()
+    {
+        _dateRange = selectedPeriod switch
+        {
+            "last7Days" => new DateRange(DateTime.Today.AddDays(-7), DateTime.Today),
+            "last30Days" => new DateRange(DateTime.Today.AddDays(-30), DateTime.Today),
+            "thisMonth" => new DateRange(
+                new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1),
+                new DateTime(DateTime.Today.Year, DateTime.Today.Month, DateTime.DaysInMonth(DateTime.Today.Year, DateTime.Today.Month))),
+            "lastMonth" => new DateRange(
+                new DateTime(DateTime.Today.Year, DateTime.Today.Month - 1, 1),
+                new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1).AddDays(-1)),
+            "last3Months" => new DateRange(
+                new DateTime(DateTime.Today.Year, DateTime.Today.Month - 3, 1),
+                new DateTime(DateTime.Today.Year, DateTime.Today.Month, DateTime.DaysInMonth(DateTime.Today.Year, DateTime.Today.Month))),
+            "last6Months" => new DateRange(
+                new DateTime(DateTime.Today.Year, DateTime.Today.Month - 6, 1),
+                new DateTime(DateTime.Today.Year, DateTime.Today.Month, DateTime.DaysInMonth(DateTime.Today.Year, DateTime.Today.Month))),
+            "last12Months" => new DateRange(
+                new DateTime(DateTime.Today.Year - 1, DateTime.Today.Month, 1),
+                new DateTime(DateTime.Today.Year, DateTime.Today.Month, DateTime.DaysInMonth(DateTime.Today.Year, DateTime.Today.Month))),
+            "currentYear" => new DateRange(
+                new DateTime(DateTime.Today.Year, 1, 1),
+                new DateTime(DateTime.Today.Year, 12, 31)),
+            "previousYear" => new DateRange(
+                new DateTime(DateTime.Today.Year - 1, 1, 1),
+                new DateTime(DateTime.Today.Year - 1, 12, 31)),
+            "allTime" => new DateRange(null, null),
+            "custom" => _dateRange ?? new DateRange(
+                new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1),
+                new DateTime(DateTime.Today.Year, DateTime.Today.Month, DateTime.DaysInMonth(DateTime.Today.Year, DateTime.Today.Month))),
+            _ => new DateRange(
+                new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1),
+                new DateTime(DateTime.Today.Year, DateTime.Today.Month, DateTime.DaysInMonth(DateTime.Today.Year, DateTime.Today.Month)))
+        };
+    }
+
+    private async Task<DashboardModel> GetDashboardAsync()
+    {
+        var range = selectedPeriod switch
+        {
+            "last7Days" => new DateRange(
+                DateTime.Today.AddDays(-7), 
+                DateTime.Today
+            ),
+            "last30Days" => new DateRange(
+                DateTime.Today.AddDays(-30), 
+                DateTime.Today
+            ),
+            "thisMonth" => new DateRange(
+                new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1),
+                new DateTime(DateTime.Today.Year, DateTime.Today.Month, DateTime.DaysInMonth(
+                    DateTime.Today.Year, DateTime.Today.Month))
+            ),
+            "lastMonth" => new DateRange(
+                new DateTime(DateTime.Today.Year, DateTime.Today.Month - 1, 1),
+                new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1).AddDays(-1)
+            ),
+            "last3Months" => new DateRange(
+                new DateTime(DateTime.Today.Year, DateTime.Today.Month - 3, 1),
+                new DateTime(DateTime.Today.Year, DateTime.Today.Month, DateTime.DaysInMonth(
+                    DateTime.Today.Year, DateTime.Today.Month))
+            ),
+            "last6Months" => new DateRange(
+                new DateTime(DateTime.Today.Year, DateTime.Today.Month - 6, 1),
+                new DateTime(DateTime.Today.Year, DateTime.Today.Month, DateTime.DaysInMonth(
+                    DateTime.Today.Year, DateTime.Today.Month))
+            ),
+            "last12Months" => new DateRange(
+                new DateTime(DateTime.Today.Year - 1, DateTime.Today.Month, 1),
+                new DateTime(DateTime.Today.Year, DateTime.Today.Month, DateTime.DaysInMonth(
+                    DateTime.Today.Year, DateTime.Today.Month))
+            ),
+            "currentYear" => new DateRange(
+                new DateTime(DateTime.Today.Year, 1, 1), 
+                new DateTime(DateTime.Today.Year, 12, 31)
+            ),
+            "previousYear" => new DateRange(
+                new DateTime(DateTime.Today.Year - 1, 1, 1), 
+                new DateTime(DateTime.Today.Year - 1, 12, 31)
+            ),
+            "allTime" => new DateRange(
+                null, 
+                null
+            ),
+            "custom" => _dateRange,
+            _ => new DateRange(
+                null, 
+                null
+            )
+        };
+
+        return await ApplicationService.GetDashboardAsync(range!.Start, range!.End);
+    }
+
+    private async Task LoadDashboardAsync()
+    {
+        Dashboard = await GetDashboardAsync();
 
         if (Dashboard != null)
         {
             LoadCharts();
         }
+
+        StateHasChanged();
     }
 
     private void LoadCharts()
@@ -416,9 +536,6 @@ else
     {
         RecentApplications = Dashboard!.RecentApplications;
     }
-
-
-
 
     private Color GetPriorityColor(string priority)
     {

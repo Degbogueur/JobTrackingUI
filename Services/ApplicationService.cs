@@ -3,6 +3,7 @@ using JobTrackingUI.Helpers;
 using JobTrackingUI.PageModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using MudBlazor;
 using Newtonsoft.Json;
 
 namespace JobTrackingUI.Services;
@@ -26,9 +27,18 @@ public class ApplicationService(HttpClient httpClient, FileHelpers fileHelpers)
         return applications ?? new PaginatedModel<ApplicationModel>();
     }
 
-    public async Task<DashboardModel> GetDashboardAsync()
+    public async Task<DashboardModel> GetDashboardAsync(
+        DateTime? startDate = null, 
+        DateTime? endDate = null)
     {
-        var response = await _httpClient.GetAsync("/api/applications/dashboard");
+        var parameters = new Dictionary<string, string?>
+        {
+            { "startDate", startDate?.ToString("O") },
+            { "endDate", endDate?.ToString("O") }
+        };
+
+        var url = QueryHelpers.AddQueryString("/api/applications/dashboard", parameters);
+        var response = await _httpClient.GetAsync(url);
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync();
         var dashboard = JsonConvert.DeserializeObject<DashboardModel>(content);
